@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { supabase, fetchWorkspaces, fetchGroups, fetchTasks, insertWorkspace, fetchWorkspaceMembers } from '../lib/supabase'
+import { supabase, fetchWorkspaces, fetchGroups, fetchTasks, insertWorkspace, fetchWorkspaceMembers, fetchWorkspaceCommentCounts } from '../lib/supabase'
 import { useBoardStore } from '../lib/store'
 import type { Task } from '../types/db'
 import { toast } from 'sonner'
@@ -13,6 +13,7 @@ export function useBoard() {
     setTasks,
     upsertTask,
     setMembers,
+    setCommentCounts,
   } = useBoardStore()
 
   // İlk yüklemede workspace listesini çek
@@ -48,10 +49,12 @@ export function useBoard() {
       fetchGroups(activeWorkspaceId),
       fetchTasks(activeWorkspaceId),
       fetchWorkspaceMembers(activeWorkspaceId),
-    ]).then(([groups, tasks, members]) => {
+      fetchWorkspaceCommentCounts(activeWorkspaceId)
+    ]).then(([groups, tasks, members, counts]) => {
       setGroups(groups)
       setTasks(tasks)
       setMembers(members)
+      setCommentCounts(counts)
     })
   }, [activeWorkspaceId])
 
@@ -219,6 +222,30 @@ export function useBoard() {
           // Eğer AKTİF workspace üyeleri değiştiyse (başkası katıldıysa) -> Üyeleri yenile
           if (incoming?.workspace_id === currentWsId || old?.workspace_id === currentWsId) {
             fetchWorkspaceMembers(currentWsId!).then(m => useBoardStore.getState().setMembers(m))
+          }
+        }
+      )
+      
+      // Global Yorum Dinleyici (ikon rengini anlık güncellemek için)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'task_comments' },
+        (payload) => {
+          const store = useBoardStore.getState()
+          const counts = { ...store.commentCounts }
+          
+          if (payload.eventType === 'INSERT') {
+            const taskId = payload.new.task_id
+            if (store.tasks.some(t => t.id === taskId)) {
+              counts[taskId] = (counts[taskId] || 0) + 1
+              store.setCommentCounts(counts)
+            }
+          } else if (payload.eventType === 'DELETE') {
+            const taskId = payload.old.task_id
+            if (store.tasks.some(t => t.id === taskId)) {
+              counts[taskId] = Math.max(0, (counts[taskId] || 1) - 1)
+              store.setCommentCounts(counts)
+            }
           }
         }
       )

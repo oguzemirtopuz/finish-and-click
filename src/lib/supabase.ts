@@ -386,6 +386,37 @@ export async function moveGroupToWorkspace(groupId: string, targetWsId: string) 
 // Yorumlar (Comments) & Görseller
 // ============================================================
 
+export async function fetchWorkspaceCommentCounts(workspaceId: string): Promise<Record<string, number>> {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select(`
+      id,
+      task_groups!inner(workspace_id),
+      task_comments(count)
+    `)
+    .eq('task_groups.workspace_id', workspaceId)
+
+  if (error) {
+    console.error("fetchWorkspaceCommentCounts error:", error)
+    return {}
+  }
+
+  const counts: Record<string, number> = {}
+  data?.forEach((row: any) => {
+    let count = 0
+    if (row.task_comments) {
+      if (Array.isArray(row.task_comments)) {
+        count = row.task_comments[0]?.count || 0
+      } else {
+        count = row.task_comments.count || 0
+      }
+    }
+    counts[row.id] = count
+  })
+
+  return counts
+}
+
 export async function fetchTaskComments(taskId: string): Promise<TaskComment[]> {
   const { data, error } = await supabase
     .from('task_comments')

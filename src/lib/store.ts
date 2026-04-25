@@ -50,6 +50,7 @@ interface BoardStore {
   setSorting: (col: string | null, dir: 'asc' | 'desc') => void
   setSelectedTaskId: (id: string | null) => void
   setCommentCount: (taskId: string, count: number) => void
+  setCommentCounts: (counts: Record<string, number>) => void
 }
 
 export const useBoardStore = create<BoardStore>()(
@@ -77,6 +78,7 @@ export const useBoardStore = create<BoardStore>()(
       setSelectedTaskId: (id) => set({ selectedTaskId: id }),
       setCommentCount: (taskId, count) =>
         set((state) => ({ commentCounts: { ...state.commentCounts, [taskId]: count } })),
+      setCommentCounts: (counts) => set({ commentCounts: counts }),
 
       upsertTask: (task) =>
         set((state) => {
