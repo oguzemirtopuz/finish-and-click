@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronRight, Plus, Pencil, Trash2, ExternalLink } from 'lucide-react'
+// Cache buster for Netlify deploy: 2026-04-27-v2
 import type { Task, TaskGroup } from '../../types/db'
 import { useBoardStore } from '../../lib/store'
 import { insertTask, updateGroup, deleteGroup, moveGroupToWorkspace } from '../../lib/supabase'
