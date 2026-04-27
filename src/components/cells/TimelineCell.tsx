@@ -28,7 +28,7 @@ export function TimelineCell({ startDate, endDate, onChange }: Props) {
     return (
       <button
         onClick={() => setEditing(true)}
-        className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors w-full px-1"
+        className="flex items-center justify-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors w-full px-1"
       >
         <Calendar size={12} className="flex-shrink-0" />
         <span className="truncate">{label}</span>
