@@ -140,10 +140,7 @@ export function SubTaskRow({ task, isLast }: Props) {
               (col.id === 'status' || col.id === 'priority') ? "" : "py-3"
             )}
           >
-            <div className={cn(
-              "w-full flex items-center",
-              (col.id === 'status' || col.id === 'priority') ? "justify-stretch" : "justify-center"
-            )}>
+            <div className="w-full flex items-center justify-center">
               {content}
             </div>
           </div>

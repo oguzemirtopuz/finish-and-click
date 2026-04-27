@@ -8,7 +8,7 @@ interface Props {
 export function RatingCell({ value, onChange }: Props) {
   const current = value ?? 0
   return (
-    <div className="flex items-center gap-0.5">
+    <div className="flex items-center justify-center gap-0.5 w-full">
       {[1, 2, 3, 4, 5].map((n) => (
         <button
           key={n}

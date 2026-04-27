@@ -211,13 +211,13 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
         )
       case 'assignee':
         return (
-          <div className="flex items-center w-full">
+          <div className="flex items-center justify-center w-full">
             <ResponsibleCell value={task.assigned_to} onChange={handleResponsible} />
           </div>
         )
       case 'timeline':
         return (
-          <div className="flex items-center w-full">
+          <div className="flex items-center justify-center w-full">
             <TimelineCell
               startDate={task.start_date}
               endDate={task.end_date}
@@ -227,31 +227,31 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
         )
       case 'priority':
         return (
-          <div className="flex w-full items-stretch h-full">
+          <div className="flex w-full items-stretch justify-center h-full">
             <PriorityCell value={task.priority ?? 'medium'} onChange={(v) => update('priority', v as Task['priority'])} />
           </div>
         )
       case 'progress':
         return (
-          <div className="flex items-center w-full">
+          <div className="flex items-center justify-center w-full">
             <ProgressCell value={task.progress} />
           </div>
         )
       case 'rating':
         return (
-          <div className="flex items-center w-full">
+          <div className="flex items-center justify-center w-full">
             <RatingCell value={task.rating} onChange={(v) => update('rating', v)} />
           </div>
         )
       case 'budget':
         return (
-          <div className="flex items-center w-full">
+          <div className="flex items-center justify-center w-full">
             <BudgetCell value={task.numeric_value} onChange={(v) => update('numeric_value', v)} />
           </div>
         )
       case 'notes':
         return (
-          <div className="flex items-center justify-start w-full">
+          <div className="flex items-center justify-center w-full">
             <button
               onClick={() => setSelectedTaskId(task.id)}
               className={cn(

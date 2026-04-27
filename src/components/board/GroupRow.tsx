@@ -250,8 +250,8 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
                 <div
                   onMouseDown={(e) => onResizeStart(e, col.id, col.width)}
                   className={cn(
-                    "absolute right-0 top-0 w-1 h-full cursor-col-resize hover:bg-blue-500/50 transition-colors z-10",
-                    resizingCol === col.id ? "bg-blue-500 w-0.5" : "bg-transparent"
+                    "absolute right-[-5px] top-0 w-[10px] h-full cursor-col-resize hover:bg-blue-500/30 transition-colors z-20",
+                    resizingCol === col.id ? "bg-blue-500 w-1" : "bg-transparent"
                   )}
                 />
               </div>
