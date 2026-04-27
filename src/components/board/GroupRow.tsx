@@ -216,8 +216,8 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
                 key={col.id}
                 style={{ width: col.width }}
                 className={cn(
-                  'shrink-0 py-3 flex items-center gap-1 border-r-[4px] border-[#0F111A]',
-                  (col.id === 'status' || col.id === 'priority') ? 'justify-center text-center px-1' : 'px-4'
+                  'shrink-0 py-3 flex items-center gap-1 border-r border-white/10',
+                  (col.id === 'status' || col.id === 'priority') ? 'justify-center text-center px-1 font-bold' : 'px-4'
                 )}
               >
                 {col.label}

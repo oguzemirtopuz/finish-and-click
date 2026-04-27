@@ -104,7 +104,7 @@ export function SummaryRow({ tasks, columns, groupColor }: Props) {
         return (
           <div
             key={col.id}
-            className="shrink-0 px-4 py-2 flex items-center border-r-[4px] border-[#0F111A]"
+            className="shrink-0 px-4 py-2 flex items-center border-r border-white/10"
             style={{ width: col.width }}
           >
             {content}
