@@ -11,7 +11,7 @@ export function ViewTabs() {
   const { viewMode, setViewMode } = useBoardStore()
 
   return (
-    <div className="flex items-center gap-1 md:gap-4 border-b border-[#3b4266] bg-[#181b34] px-4 md:px-8 py-2 md:py-0 overflow-x-auto scrollbar-hide">
+    <div className="flex items-center gap-1 md:gap-4 border-b border-[#3b4266] bg-[#181b34] px-6 py-2 md:py-0 overflow-x-auto scrollbar-hide">
       {TABS.map((tab, idx) => (
         <button
           key={idx}

@@ -68,13 +68,13 @@ export function Navbar() {
   }
 
   return (
-    <header className="shrink-0 bg-[#181b34] border-b border-[#3b4266] pt-4 px-4 pb-4 md:px-8 md:pt-6 md:pb-0">
+    <header className="shrink-0 bg-[#181b34] border-b border-[#3b4266] pt-4 px-6 pb-4 md:pt-6 md:pb-0">
       {/* Title row */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2 md:mb-6">
         <div className="flex items-center gap-4">
           {activeWorkspace ? (
             <>
-              <h1 className="text-xl md:text-3xl font-bold text-white leading-tight">{activeWorkspace.name}</h1>
+              <h1 className="text-xl md:text-3xl font-bold text-white leading-tight whitespace-nowrap">{activeWorkspace.name}</h1>
               <DropdownPortal
                 trigger={
                   <button className="flex items-center justify-center p-1 rounded hover:bg-white/10 text-[#a9abcd] cursor-pointer" >
@@ -96,12 +96,12 @@ export function Navbar() {
               </DropdownPortal>
             </>
           ) : (
-            <h1 className="text-xl md:text-3xl font-bold text-white">New Custom Board</h1>
+            <h1 className="text-xl md:text-3xl font-bold text-white whitespace-nowrap">New Custom Board</h1>
           )}
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+        <div className="flex items-center gap-x-4 ml-auto pb-2 md:pb-0">
           {activeWorkspace && (
             <button
               onClick={() => setInviteModalOpen(true)}
@@ -120,7 +120,7 @@ export function Navbar() {
           {/* Avatar */}
           <DropdownPortal
             trigger={
-              <div className="shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#6366f1] flex items-center justify-center text-white text-sm sm:text-base font-bold cursor-pointer ml-1 sm:ml-2">
+              <div className="shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#6366f1] flex items-center justify-center text-white text-sm sm:text-base font-bold cursor-pointer">
                 {userEmail.charAt(0).toUpperCase()}
               </div>
             }

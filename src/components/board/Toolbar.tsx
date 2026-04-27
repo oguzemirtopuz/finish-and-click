@@ -39,7 +39,7 @@ export function Toolbar({ search, onSearch }: Props) {
   }
 
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between px-4 py-3 md:px-8 gap-4 bg-[#181b34] border-b border-[#3b4266]">
+    <div className="flex flex-col md:flex-row md:items-center justify-between px-6 py-3 gap-4 bg-[#181b34] border-b border-[#3b4266]">
       {/* Left: New Item */}
       <div className="flex items-center gap-2">
         {adding ? (
