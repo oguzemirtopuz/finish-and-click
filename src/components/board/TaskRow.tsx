@@ -293,7 +293,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
         </div>
 
         <div
-          className="flex items-center gap-2 shrink-0 px-4 py-3 border-r-[4px] border-[#0F111A]"
+          className="flex items-center gap-2 shrink-0 px-4 py-3 border-r-[1px] border-solid border-gray-600"
           style={{ width: visibleCols.find((c) => c.id === 'title')?.width ?? 300 }}
         >
           <button
@@ -353,11 +353,16 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
             key={col.id}
             style={{ width: col.width }}
             className={cn(
-              "shrink-0 flex items-stretch border-r-[1px] border-solid border-gray-600",
-              (col.id === 'status' || col.id === 'priority') ? "" : "py-3 px-4"
+              "shrink-0 flex items-stretch border-r-[1px] border-solid border-gray-600 px-4",
+              (col.id === 'status' || col.id === 'priority') ? "" : "py-3"
             )}
           >
-            {renderCell(col)}
+            <div className={cn(
+              "w-full flex items-center",
+              (col.id === 'status' || col.id === 'priority') ? "justify-stretch" : "justify-center"
+            )}>
+              {renderCell(col)}
+            </div>
           </div>
         ))}
 

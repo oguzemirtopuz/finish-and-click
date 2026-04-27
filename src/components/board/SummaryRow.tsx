@@ -2,6 +2,7 @@ import type { Task } from '../../types/db'
 import type { ColumnDef } from '../../lib/store'
 import { STRIPE_W, CHECKBOX_W } from './columns'
 import { STATUS_CONFIG } from '../cells/StatusCell'
+import { cn } from '../../lib/utils'
 
 interface Props {
   tasks: Task[]
@@ -104,7 +105,10 @@ export function SummaryRow({ tasks, columns, groupColor }: Props) {
         return (
           <div
             key={col.id}
-            className="shrink-0 px-4 py-2 flex items-center border-r-[1px] border-solid border-gray-600"
+            className={cn(
+              "shrink-0 px-4 py-2 flex items-center border-r-[1px] border-solid border-gray-600",
+              col.id === 'title' ? "justify-start" : "justify-center"
+            )}
             style={{ width: col.width }}
           >
             {content}

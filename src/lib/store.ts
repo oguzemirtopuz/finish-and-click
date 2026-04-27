@@ -47,6 +47,7 @@ interface BoardStore {
   toggleCollapse: (groupId: string) => void
   setViewMode: (v: ViewMode) => void
   toggleColumn: (id: string) => void
+  updateColumnWidth: (id: string, width: number) => void
   setSorting: (col: string | null, dir: 'asc' | 'desc') => void
   setSelectedTaskId: (id: string | null) => void
   setCommentCount: (taskId: string, count: number) => void
@@ -103,6 +104,11 @@ export const useBoardStore = create<BoardStore>()(
           columns: state.columns.map((c) =>
             c.id === id && !c.fixed ? { ...c, visible: !c.visible } : c
           ),
+        })),
+
+      updateColumnWidth: (id, width) =>
+        set((state) => ({
+          columns: state.columns.map((c) => (c.id === id ? { ...c, width } : c)),
         })),
     }),
     {

@@ -61,9 +61,8 @@ export function Toolbar({ search, onSearch }: Props) {
         )}
       </div>
 
-      {/* Right: Search, Filter, Sort, Columns */}
       <div className="flex items-center gap-2 sm:gap-4">
-        <div className="flex items-center gap-2 border-r border-[#3b4266] pr-4">
+        <div className="flex items-center gap-2 border-r border-[#3b4266] pr-6">
           {/* Search */}
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             <Search size={16} style={{ position: 'absolute', left: 10, color: '#a9abcd' }} />
@@ -113,14 +112,16 @@ export function Toolbar({ search, onSearch }: Props) {
 
           {/* Sort button */}
           <button
-            className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white hover:bg-[#323956] rounded transition-colors"
+            className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white hover:bg-[#323956] rounded transition-colors mr-2"
           >
             <ArrowUpDown size={16} className="text-[#a9abcd]" /> <span className="hidden sm:inline">Sort</span>
           </button>
         </div>
 
         {/* Column manager */}
-        <ColumnManager />
+        <div className="pl-2">
+          <ColumnManager />
+        </div>
       </div>
     </div>
   )

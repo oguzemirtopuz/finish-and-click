@@ -25,13 +25,37 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
   const [adding, setAdding] = useState(false)
   const [newTitle, setNewTitle] = useState('')
 
-  const { workspaces, activeWorkspaceId, setActiveWorkspace, columns, collapsedGroups, toggleCollapse } = useBoardStore()
+  const { workspaces, activeWorkspaceId, setActiveWorkspace, columns, collapsedGroups, toggleCollapse, updateColumnWidth } = useBoardStore()
 
   const collapsed = collapsedGroups.has(group.id)
   const otherWorkspaces = workspaces.filter(w => w.id !== activeWorkspaceId)
 
   const rootTasks = tasks.filter((t) => t.parent_id === null)
   const visibleCols = columns.filter((c) => c.visible)
+
+  // Resizer state
+  const [resizingCol, setResizingCol] = useState<string | null>(null)
+
+  function onResizeStart(e: React.MouseEvent, colId: string, currentWidth: number) {
+    e.preventDefault()
+    e.stopPropagation()
+    setResizingCol(colId)
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const delta = moveEvent.clientX - e.clientX
+      const newWidth = Math.max(50, currentWidth + delta)
+      updateColumnWidth(colId, newWidth)
+    }
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+      setResizingCol(null)
+    }
+
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+  }
 
   function getSubtasks(parentId: string) {
     return allTasks.filter((t) => t.parent_id === parentId)
@@ -216,11 +240,20 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
                 key={col.id}
                 style={{ width: col.width }}
                 className={cn(
-                  'shrink-0 py-3 flex items-center gap-1 border-r-[1px] border-solid border-gray-600',
-                  (col.id === 'status' || col.id === 'priority') ? 'justify-center text-center px-1 font-bold' : 'px-4'
+                  'shrink-0 py-3 flex items-center gap-1 border-r-[1px] border-solid border-gray-600 px-4 group/resizer relative',
+                  col.id === 'title' ? 'justify-start text-left' : 'justify-center text-center font-bold'
                 )}
               >
                 {col.label}
+                
+                {/* Column Resizer */}
+                <div
+                  onMouseDown={(e) => onResizeStart(e, col.id, col.width)}
+                  className={cn(
+                    "absolute right-0 top-0 w-1 h-full cursor-col-resize hover:bg-blue-500/50 transition-colors z-10",
+                    resizingCol === col.id ? "bg-blue-500 w-0.5" : "bg-transparent"
+                  )}
+                />
               </div>
             ))}
             {/* Sağ simetri barı */}
