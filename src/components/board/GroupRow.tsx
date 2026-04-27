@@ -199,7 +199,7 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
       </div>
 
       {!collapsed && (
-        <div className="w-max rounded-md ring-1 ring-[#1D1F2B] overflow-visible shadow-[0_4px_20px_rgba(0,0,0,0.2)] bg-[#0F111A] mb-2">
+        <div className="w-fit inline-flex flex-col rounded-md ring-1 ring-[#1D1F2B] overflow-visible shadow-[0_4px_20px_rgba(0,0,0,0.2)] bg-[#0F111A] mb-2">
 
           {/* Sütun başlıkları */}
           <div
@@ -249,8 +249,11 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
           <div className="border-t border-[#1D1F2B] rounded-b-md overflow-hidden bg-[#0F111A] flex items-stretch">
             {/* Sol renkli şerit — rows/header ile aynı genişlik */}
             <div style={{ width: STRIPE_W, background: `${group.color}30` }} className="shrink-0 self-stretch" />
+            {/* Checkbox spacer — hizalama için */}
+            <div style={{ width: CHECKBOX_W }} className="shrink-0" />
+            
             {adding ? (
-              <div className="flex items-center gap-2 flex-1 pl-10 pr-4 py-2.5 bg-[#1D1F2B]">
+              <div className="flex items-center gap-2 flex-1 px-4 py-2.5 bg-[#1D1F2B]">
                 <input
                   autoFocus value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
@@ -267,7 +270,7 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
             ) : (
               <button
                 onClick={() => setAdding(true)}
-                className="flex items-center gap-1.5 flex-1 pl-10 pr-4 py-4 text-sm text-[#808191] hover:text-white hover:bg-[#1D1F2B] transition-colors"
+                className="flex items-center gap-1.5 flex-1 px-4 py-4 text-sm text-[#808191] hover:text-white hover:bg-[#1D1F2B] transition-colors"
               >
                 <Plus size={14} />
                 + Add Item
