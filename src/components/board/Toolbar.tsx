@@ -62,60 +62,62 @@ export function Toolbar({ search, onSearch }: Props) {
       </div>
 
       {/* Right: Search, Filter, Sort, Columns */}
-      <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-        {/* Search */}
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-          <Search size={16} style={{ position: 'absolute', left: 10, color: '#a9abcd' }} />
-          <input
-            value={search}
-            onChange={e => onSearch(e.target.value)}
-            placeholder="Search"
-            style={{ background: '#222741', border: '1px solid #3b4266', color: '#fff', padding: '8px 12px 8px 32px', borderRadius: 20, outline: 'none', width: '100%', maxWidth: 200, fontSize: 14, fontFamily: 'inherit', transition: 'all .3s' }}
-            onFocus={e => { e.currentTarget.style.borderColor = '#579bfc'; e.currentTarget.style.minWidth = '200px' }}
-            onBlur={e => { e.currentTarget.style.borderColor = '#3b4266'; e.currentTarget.style.minWidth = '140px' }}
-          />
-        </div>
-
-        {/* Filter dropdown */}
-        <DropdownPortal
-          trigger={
-            <button
-              className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white hover:bg-[#323956] rounded transition-colors"
-            >
-              <SlidersHorizontal size={16} className="text-[#a9abcd]" /> <span className="hidden sm:inline">Filter</span>
-            </button>
-          }
-          width={220}
-        >
-          <div style={{ padding: 8 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: 8, paddingLeft: 4 }}>Sıralama Ölçütü</div>
-            {[
-              { label: 'İsim (A-Z)', col: 'title', dir: 'asc' as const },
-              { label: 'Durum', col: 'status', dir: 'asc' as const },
-              { label: 'Öncelik', col: 'priority', dir: 'asc' as const },
-              { label: 'Oluşturulma Tarihi', col: 'created_at', dir: 'desc' as const },
-            ].map(({ label, col, dir }) => (
-              <button key={label} onClick={() => useBoardStore.getState().setSorting(col, dir)}
-                style={{ width: '100%', textAlign: 'left', padding: '6px 8px', fontSize: 13, color: '#374151', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 4 }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#f3f4f6')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>
-                {label}
-              </button>
-            ))}
-            <div style={{ borderTop: '1px solid #f3f4f6', margin: '6px 0' }} />
-            <button onClick={() => useBoardStore.getState().setSorting(null, 'asc')}
-              style={{ width: '100%', textAlign: 'left', padding: '6px 8px', fontSize: 12, color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 4 }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#fef2f2')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>
-              Sıralamayı Sıfırla
-            </button>
+      <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 border-r border-[#3b4266] pr-4">
+          {/* Search */}
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <Search size={16} style={{ position: 'absolute', left: 10, color: '#a9abcd' }} />
+            <input
+              value={search}
+              onChange={e => onSearch(e.target.value)}
+              placeholder="Search"
+              style={{ background: '#222741', border: '1px solid #3b4266', color: '#fff', padding: '8px 12px 8px 32px', borderRadius: 20, outline: 'none', width: '100%', maxWidth: 200, fontSize: 14, fontFamily: 'inherit', transition: 'all .3s' }}
+              onFocus={e => { e.currentTarget.style.borderColor = '#579bfc'; e.currentTarget.style.minWidth = '200px' }}
+              onBlur={e => { e.currentTarget.style.borderColor = '#3b4266'; e.currentTarget.style.minWidth = '140px' }}
+            />
           </div>
-        </DropdownPortal>
 
-        {/* Sort button */}
-        <button
-          className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white hover:bg-[#323956] rounded transition-colors"
-        >
-          <ArrowUpDown size={16} className="text-[#a9abcd]" /> <span className="hidden sm:inline">Sort</span>
-        </button>
+          {/* Filter dropdown */}
+          <DropdownPortal
+            trigger={
+              <button
+                className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white hover:bg-[#323956] rounded transition-colors"
+              >
+                <SlidersHorizontal size={16} className="text-[#a9abcd]" /> <span className="hidden sm:inline">Filter</span>
+              </button>
+            }
+            width={220}
+          >
+            <div style={{ padding: 8 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: 8, paddingLeft: 4 }}>Sıralama Ölçütü</div>
+              {[
+                { label: 'İsim (A-Z)', col: 'title', dir: 'asc' as const },
+                { label: 'Durum', col: 'status', dir: 'asc' as const },
+                { label: 'Öncelik', col: 'priority', dir: 'asc' as const },
+                { label: 'Oluşturulma Tarihi', col: 'created_at', dir: 'desc' as const },
+              ].map(({ label, col, dir }) => (
+                <button key={label} onClick={() => useBoardStore.getState().setSorting(col, dir)}
+                  style={{ width: '100%', textAlign: 'left', padding: '6px 8px', fontSize: 13, color: '#374151', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 4 }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#f3f4f6')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>
+                  {label}
+                </button>
+              ))}
+              <div style={{ borderTop: '1px solid #f3f4f6', margin: '6px 0' }} />
+              <button onClick={() => useBoardStore.getState().setSorting(null, 'asc')}
+                style={{ width: '100%', textAlign: 'left', padding: '6px 8px', fontSize: 12, color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 4 }}
+                onMouseEnter={e => (e.currentTarget.style.background = '#fef2f2')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>
+                Sıralamayı Sıfırla
+              </button>
+            </div>
+          </DropdownPortal>
+
+          {/* Sort button */}
+          <button
+            className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white hover:bg-[#323956] rounded transition-colors"
+          >
+            <ArrowUpDown size={16} className="text-[#a9abcd]" /> <span className="hidden sm:inline">Sort</span>
+          </button>
+        </div>
 
         {/* Column manager */}
         <ColumnManager />

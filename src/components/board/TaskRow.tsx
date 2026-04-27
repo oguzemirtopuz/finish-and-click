@@ -353,7 +353,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
             key={col.id}
             style={{ width: col.width }}
             className={cn(
-              "shrink-0 flex items-stretch border-r border-white/10",
+              "shrink-0 flex items-stretch border-r-[1px] border-solid border-gray-600",
               (col.id === 'status' || col.id === 'priority') ? "" : "py-3 px-4"
             )}
           >

@@ -34,7 +34,7 @@ export function Sidebar() {
   const sharedWorkspaces = uniqueWorkspaces.filter(ws => ws.type === 'shared')
 
   return (
-    <aside style={{ width: 170, background: '#282f4c', borderRight: '1px solid #3b4266', flexShrink: 0 }} className="flex flex-col h-full">
+    <aside style={{ width: 220, background: '#282f4c', borderRight: '1px solid #3b4266', flexShrink: 0 }} className="flex flex-col h-full">
       {/* Logo */}
       <div style={{ padding: '16px 16px 16px 16px', borderBottom: '1px solid #3b4266' }} className="flex items-center gap-3">
         <div style={{

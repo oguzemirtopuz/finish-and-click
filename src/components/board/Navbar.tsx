@@ -74,7 +74,7 @@ export function Navbar() {
         <div className="flex items-center gap-4">
           {activeWorkspace ? (
             <>
-              <h1 className="text-xl md:text-3xl font-bold text-white leading-tight truncate max-w-[200px] md:max-w-md">{activeWorkspace.name}</h1>
+              <h1 className="text-xl md:text-3xl font-bold text-white leading-tight">{activeWorkspace.name}</h1>
               <DropdownPortal
                 trigger={
                   <button className="flex items-center justify-center p-1 rounded hover:bg-white/10 text-[#a9abcd] cursor-pointer" >

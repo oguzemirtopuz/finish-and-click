@@ -113,27 +113,27 @@ export function SubTaskRow({ task, isLast }: Props) {
       {/* Dinamik hücreler */}
       {columns.filter((c) => c.visible && c.id !== 'title').map((col) => {
         if (col.id === 'status') return (
-          <div key={col.id} className="flex w-full h-full items-stretch shrink-0 border-r-[4px] border-[#0F111A]" style={{ width: col.width }}>
+          <div key={col.id} className="flex w-full h-full items-stretch shrink-0 border-r-[1px] border-solid border-gray-600" style={{ width: col.width }}>
             <StatusCell value={task.status} onChange={(v) => update('status', v as Task['status'])} />
           </div>
         )
         if (col.id === 'priority') return (
-          <div key={col.id} className="flex w-full h-full items-stretch shrink-0 border-r-[4px] border-[#0F111A]" style={{ width: col.width }}>
+          <div key={col.id} className="flex w-full h-full items-stretch shrink-0 border-r-[1px] border-solid border-gray-600" style={{ width: col.width }}>
             <PriorityCell value={task.priority} onChange={(v) => update('priority', v as Task['priority'])} />
           </div>
         )
         if (col.id === 'progress') return (
-          <div key={col.id} className="flex items-center shrink-0 py-3 px-4 border-r-[4px] border-[#0F111A]" style={{ width: col.width }}>
+          <div key={col.id} className="flex items-center shrink-0 py-3 px-4 border-r-[1px] border-solid border-gray-600" style={{ width: col.width }}>
             <div className="w-full"><ProgressCell value={task.progress} /></div>
           </div>
         )
         if (col.id === 'assignee') return (
-          <div key={col.id} className="flex items-center shrink-0 py-3 px-4 border-r-[4px] border-[#0F111A]" style={{ width: col.width }}>
+          <div key={col.id} className="flex items-center shrink-0 py-3 px-4 border-r-[1px] border-solid border-gray-600" style={{ width: col.width }}>
             <div className="w-full"><ResponsibleCell value={task.assigned_to} onChange={(v) => update('assigned_to', v)} /></div>
           </div>
         )
         if (col.id === 'notes') return (
-          <div key={col.id} className="flex items-center justify-start shrink-0 py-3 px-4 border-r-[4px] border-[#0F111A]" style={{ width: col.width }}>
+          <div key={col.id} className="flex items-center justify-start shrink-0 py-3 px-4 border-r-[1px] border-solid border-gray-600" style={{ width: col.width }}>
             <button
               onClick={() => setSelectedTaskId(task.id)}
               className={cn(
@@ -147,7 +147,7 @@ export function SubTaskRow({ task, isLast }: Props) {
             </button>
           </div>
         )
-        return <div key={col.id} style={{ width: col.width }} className="shrink-0 flex items-center px-4 py-3 border-r-[4px] border-[#0F111A]" />
+        return <div key={col.id} style={{ width: col.width }} className="shrink-0 flex items-center px-4 py-3 border-r-[1px] border-solid border-gray-600" />
       })}
 
       {/* Sağ simetri barı */}
