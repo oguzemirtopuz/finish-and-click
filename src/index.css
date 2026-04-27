@@ -37,3 +37,6 @@ body {
 ::-webkit-scrollbar-corner {
   background: transparent;
 }
+
+/* Vertical sync alignment fix: 2026.04.27.01 */
+.force-rebuild { opacity: 0.999; }
