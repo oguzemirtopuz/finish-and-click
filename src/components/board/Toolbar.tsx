@@ -62,7 +62,7 @@ export function Toolbar({ search, onSearch }: Props) {
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4">
-        <div className="flex items-center gap-2 border-r border-[#3b4266] pr-2">
+        <div className="flex items-center gap-2 border-r border-[#3b4266] pr-0">
           {/* Search */}
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             <Search size={16} style={{ position: 'absolute', left: 10, color: '#a9abcd' }} />
