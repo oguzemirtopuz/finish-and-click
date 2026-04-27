@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+// Vercel Deploy Trigger v6
 import { useBoard } from './hooks/useBoard'
 import { Navbar } from './components/board/Navbar'
 import { BoardView } from './components/board/BoardView'
