@@ -87,23 +87,23 @@ export function ResponsibleCell({ value, onChange }: Props) {
   }
 
   const trigger = selectedProfile ? (
-    <div className="flex items-center gap-1.5 cursor-pointer group/av px-4">
+    <div className="flex items-center justify-center w-full gap-1.5 cursor-pointer group/av px-4">
       <div
-        className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold ring-2 ring-[#0F111A]"
+        className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold ring-2 ring-[#0F111A] flex-shrink-0"
         style={{ background: color(selectedProfile.email) }}
       >
         {getDisplayName(selectedProfile)[0].toUpperCase()}
       </div>
-      <span className="text-xs text-gray-400 group-hover/av:text-white transition-colors truncate max-w-[100px]">
+      <span className="text-xs text-gray-400 group-hover/av:text-white transition-colors truncate max-w-[80px]">
         {getDisplayName(selectedProfile)}
       </span>
     </div>
   ) : value ? (
-    <div className="flex items-center gap-1.5 cursor-pointer group/av px-4">
-      <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold ring-2 ring-[#0F111A] bg-gray-500">
+    <div className="flex items-center justify-center w-full gap-1.5 cursor-pointer group/av px-4">
+      <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold ring-2 ring-[#0F111A] bg-gray-500 flex-shrink-0">
         ?
       </div>
-      <span className="text-xs text-gray-400 truncate max-w-[100px]">Bilinmeyen</span>
+      <span className="text-xs text-gray-400 truncate max-w-[80px]">Bilinmeyen</span>
     </div>
   ) : (
     <div className="flex items-center justify-center w-full cursor-pointer group/av hover:opacity-80 transition-opacity px-4">

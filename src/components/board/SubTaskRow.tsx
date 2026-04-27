@@ -82,7 +82,7 @@ export function SubTaskRow({ task, isLast }: Props) {
       </div>
 
       {/* Title */}
-      <div className="flex items-center gap-2 shrink-0 px-4 py-3 border-r-[1px] border-solid border-gray-600" style={{ width: titleWidth }}>
+      <div className="flex items-center gap-2 shrink-0 px-4 py-3 border-r-[1px] border-solid border-gray-600 min-w-0 overflow-hidden" style={{ width: titleWidth }}>
         {editingTitle ? (
           <input
             autoFocus value={title}
