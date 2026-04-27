@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, Plus, SlidersHorizontal, ArrowUpDown } from 'lucide-react'
+import { Search, Plus, SlidersHorizontal } from 'lucide-react'
 import { useBoardStore } from '../../lib/store'
 import { insertGroup } from '../../lib/supabase'
 import { DropdownPortal } from '../ui/DropdownPortal'
@@ -110,12 +110,6 @@ export function Toolbar({ search, onSearch }: Props) {
             </div>
           </DropdownPortal>
 
-          {/* Sort button */}
-          <button
-            className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white hover:bg-[#323956] rounded transition-colors mr-2"
-          >
-            <ArrowUpDown size={16} className="text-[#a9abcd]" /> <span className="hidden sm:inline">Sort</span>
-          </button>
         </div>
 
         {/* Column manager */}

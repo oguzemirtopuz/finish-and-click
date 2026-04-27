@@ -249,11 +249,13 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
                 {/* Column Resizer */}
                 <div
                   onMouseDown={(e) => onResizeStart(e, col.id, col.width)}
-                  className={cn(
-                    "absolute right-[-5px] top-0 w-[10px] h-full cursor-col-resize hover:bg-blue-500/30 transition-colors z-20",
-                    resizingCol === col.id ? "bg-blue-500 w-1" : "bg-transparent"
-                  )}
-                />
+                  className="absolute right-[-8px] top-0 w-[16px] h-full cursor-col-resize z-20 group/handle flex justify-center"
+                >
+                  <div className={cn(
+                    "w-[2px] h-full transition-colors",
+                    resizingCol === col.id ? "bg-blue-500" : "bg-transparent group-hover/handle:bg-blue-500/50"
+                  )} />
+                </div>
               </div>
             ))}
             {/* Sağ simetri barı */}
