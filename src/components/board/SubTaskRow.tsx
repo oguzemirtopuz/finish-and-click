@@ -123,17 +123,17 @@ export function SubTaskRow({ task, isLast }: Props) {
           </div>
         )
         if (col.id === 'progress') return (
-          <div key={col.id} className="flex items-center shrink-0 py-3 border-r-[4px] border-[#0F111A]" style={{ width: col.width }}>
-            <ProgressCell value={task.progress} />
+          <div key={col.id} className="flex items-center shrink-0 py-3 px-4 border-r-[4px] border-[#0F111A]" style={{ width: col.width }}>
+            <div className="w-full"><ProgressCell value={task.progress} /></div>
           </div>
         )
         if (col.id === 'assignee') return (
-          <div key={col.id} className="flex items-center shrink-0 py-3 border-r-[4px] border-[#0F111A]" style={{ width: col.width }}>
-            <ResponsibleCell value={task.assigned_to} onChange={(v) => update('assigned_to', v)} />
+          <div key={col.id} className="flex items-center shrink-0 py-3 px-4 border-r-[4px] border-[#0F111A]" style={{ width: col.width }}>
+            <div className="w-full"><ResponsibleCell value={task.assigned_to} onChange={(v) => update('assigned_to', v)} /></div>
           </div>
         )
         if (col.id === 'notes') return (
-          <div key={col.id} className="flex items-center justify-start pl-4 shrink-0 border-r-[4px] border-[#0F111A]" style={{ width: col.width }}>
+          <div key={col.id} className="flex items-center justify-start shrink-0 py-3 px-4 border-r-[4px] border-[#0F111A]" style={{ width: col.width }}>
             <button
               onClick={() => setSelectedTaskId(task.id)}
               className={cn(

@@ -217,7 +217,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
         )
       case 'timeline':
         return (
-          <div className="flex items-center px-2">
+          <div className="flex items-center w-full">
             <TimelineCell
               startDate={task.start_date}
               endDate={task.end_date}
@@ -233,25 +233,25 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
         )
       case 'progress':
         return (
-          <div className="flex items-center px-4">
+          <div className="flex items-center w-full">
             <ProgressCell value={task.progress} />
           </div>
         )
       case 'rating':
         return (
-          <div className="flex items-center px-4">
+          <div className="flex items-center w-full">
             <RatingCell value={task.rating} onChange={(v) => update('rating', v)} />
           </div>
         )
       case 'budget':
         return (
-          <div className="flex items-center px-4">
+          <div className="flex items-center w-full">
             <BudgetCell value={task.numeric_value} onChange={(v) => update('numeric_value', v)} />
           </div>
         )
       case 'notes':
         return (
-          <div className="flex items-center justify-start pl-6">
+          <div className="flex items-center justify-start w-full">
             <button
               onClick={() => setSelectedTaskId(task.id)}
               className={cn(
@@ -293,7 +293,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
         </div>
 
         <div
-          className="flex items-center gap-2 shrink-0 px-4 py-4 border-r-[4px] border-[#0F111A]"
+          className="flex items-center gap-2 shrink-0 px-4 py-3 border-r-[4px] border-[#0F111A]"
           style={{ width: visibleCols.find((c) => c.id === 'title')?.width ?? 300 }}
         >
           <button
@@ -354,7 +354,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
             style={{ width: col.width }}
             className={cn(
               "shrink-0 flex items-stretch border-r-[4px] border-[#0F111A]",
-              (col.id === 'status' || col.id === 'priority') ? "" : "py-4"
+              (col.id === 'status' || col.id === 'priority') ? "" : "py-3 px-4"
             )}
           >
             {renderCell(col)}

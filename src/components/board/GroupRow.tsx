@@ -199,7 +199,7 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
       </div>
 
       {!collapsed && (
-        <div className="rounded-md ring-1 ring-[#1D1F2B] overflow-visible shadow-[0_4px_20px_rgba(0,0,0,0.2)] bg-[#0F111A] mb-2">
+        <div className="w-max rounded-md ring-1 ring-[#1D1F2B] overflow-visible shadow-[0_4px_20px_rgba(0,0,0,0.2)] bg-[#0F111A] mb-2">
 
           {/* Sütun başlıkları */}
           <div
@@ -215,8 +215,8 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
                 key={col.id}
                 style={{ width: col.width }}
                 className={cn(
-                  'shrink-0 py-3.5 px-4 flex items-center gap-1 border-r-[4px] border-[#0F111A]',
-                  col.id === 'status' && 'justify-center'
+                  'shrink-0 py-3 flex items-center gap-1 border-r-[4px] border-[#0F111A]',
+                  (col.id === 'status' || col.id === 'priority') ? 'justify-center px-1' : 'px-4'
                 )}
               >
                 {col.label}
