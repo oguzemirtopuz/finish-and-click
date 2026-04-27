@@ -63,6 +63,9 @@ export function BoardView() {
           <KanbanView />
         ) : (
           <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16, minWidth: 'max-content' }}>
+            <div style={{ background: 'red', color: 'white', padding: 20, fontSize: 40, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 }}>
+              GÜNCELLEME TESTİ (V5 SUCCESS)
+            </div>
             {groups.map((group) => (
               <GroupRow
                 key={group.id}
