@@ -71,7 +71,7 @@ export function SummaryRow({ tasks, columns, groupColor }: Props) {
           )
         } else if (col.id === 'progress') {
           content = (
-            <div className="flex items-center gap-1.5 w-full">
+            <div className="flex items-center justify-center gap-1.5 w-full">
               <div className="w-16 h-1.5 bg-[#20263c] rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all"
@@ -86,7 +86,7 @@ export function SummaryRow({ tasks, columns, groupColor }: Props) {
           )
         } else if (col.id === 'budget') {
           content = (
-            <span className="font-semibold text-gray-300 w-full">
+            <span className="font-semibold text-gray-300 w-full text-center">
               {totalBudget > 0
                 ? new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(totalBudget)
                 : '—'}
@@ -94,7 +94,7 @@ export function SummaryRow({ tasks, columns, groupColor }: Props) {
           )
         } else if (col.id === 'rating') {
           content = (
-            <span className="w-full">
+            <span className="w-full text-center">
               {avgRating != null ? `⭐ ${avgRating}` : '—'}
             </span>
           )

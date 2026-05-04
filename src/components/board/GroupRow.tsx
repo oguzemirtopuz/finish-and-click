@@ -132,10 +132,10 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
   return (
     <div className="mb-8 group">
       {/* Grup başlığı */}
-      <div className="flex items-center gap-2 mb-2 px-1 group">
+      <div className="flex items-center gap-2 mb-2 px-1 group overflow-hidden">
         <button
           onClick={() => toggleCollapse(group.id)}
-          className="p-1 rounded-md hover:bg-[#20263c] transition-colors"
+          className="p-1 rounded-md hover:bg-[#20263c] transition-colors shrink-0"
         >
           {collapsed
             ? <ChevronRight size={18} className="text-[#0073ea]" />
@@ -152,26 +152,28 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
             onBlur={handleRename}
             onKeyDown={(e) => e.key === 'Enter' && handleRename()}
             maxLength={255}
-            className="font-bold text-white text-[13px] outline-none border-b border-blue-500 bg-transparent px-1"
+            className="font-bold text-white text-[13px] outline-none border-b border-blue-500 bg-transparent px-1 min-w-0"
           />
         ) : (
-          <span
-            onDoubleClick={() => setIsEditingName(true)}
-            className="font-bold text-white text-[13px] hover:text-blue-400 cursor-text group/title flex items-center gap-2"
-          >
-            {group.name}
+          <div className="flex items-center gap-2 group/title min-w-0">
+            <span
+              onDoubleClick={() => setIsEditingName(true)}
+              className="font-bold text-white text-[13px] hover:text-blue-400 cursor-text truncate block whitespace-nowrap"
+            >
+              {group.name}
+            </span>
             <button
               onClick={() => setIsEditingName(true)}
-              className="opacity-0 group-hover/title:opacity-100 transition-opacity text-gray-400 hover:text-blue-500"
+              className="opacity-0 group-hover/title:opacity-100 transition-opacity text-gray-400 hover:text-blue-500 shrink-0"
             >
               <Pencil size={11} />
             </button>
-          </span>
+          </div>
         )}
 
         <button
           onClick={handleDelete}
-          className="ml-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="ml-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
           title="Grubu Sil"
         >
           <Trash2 size={13} />
@@ -183,7 +185,7 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
             <button
               disabled={isMoving}
               className={cn(
-                "ml-1 p-1 text-gray-500 hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity rounded-md hover:bg-[#20263c]",
+                "ml-1 p-1 text-gray-500 hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity rounded-md hover:bg-[#20263c] shrink-0",
                 isMoving && "animate-pulse"
               )}
               title="Başka Alanına Taşı"
@@ -217,7 +219,7 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
         </DropdownPortal>
 
         <span
-          className="text-xs text-[#808191]"
+          className="text-[11px] sm:text-xs text-[#808191] whitespace-nowrap shrink-0 ml-auto"
         >
           {rootTasks.length} items
         </span>

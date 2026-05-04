@@ -12,7 +12,7 @@ import type { Task } from '../../types/db'
 import { Plus } from 'lucide-react'
 
 type StatusKey = keyof typeof STATUS_CONFIG
-const COLUMNS: StatusKey[] = ['todo', 'in_progress', 'done', 'stuck', 'waiting']
+const COLUMNS: StatusKey[] = ['todo', 'in_progress', 'test', 'done', 'stuck', 'waiting']
 
 export function KanbanView() {
   const { tasks, upsertTask } = useBoardStore()

@@ -205,7 +205,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
     switch (col.id) {
       case 'status':
         return (
-          <div className="flex w-full items-stretch h-full">
+          <div className="flex items-center justify-center w-full">
             <StatusCell value={task.status} onChange={handleStatus} />
           </div>
         )
@@ -227,7 +227,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
         )
       case 'priority':
         return (
-          <div className="flex w-full items-stretch justify-center h-full">
+          <div className="flex items-center justify-center w-full">
             <PriorityCell value={task.priority ?? 'medium'} onChange={(v) => update('priority', v as Task['priority'])} />
           </div>
         )
@@ -329,6 +329,16 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
             <Pencil size={11} />
           </button>
 
+          {hasNote && (
+            <button
+              onClick={() => setSelectedTaskId(task.id)}
+              className="shrink-0 text-blue-400 hover:text-blue-300 transition-all opacity-60 hover:opacity-100"
+              title="Not/Yorum Var"
+            >
+              <MessageSquare size={11} fill="currentColor" />
+            </button>
+          )}
+
           <button
             onClick={handleDelete}
             className="shrink-0 text-gray-300 hover:text-red-500 opacity-20 group-hover/row:opacity-100 transition-all"
@@ -352,15 +362,9 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
           <div
             key={col.id}
             style={{ width: col.width }}
-            className={cn(
-              "shrink-0 flex items-stretch border-r-[1px] border-solid border-gray-600 px-4",
-              (col.id === 'status' || col.id === 'priority') ? "" : "py-3"
-            )}
+            className="shrink-0 flex items-center justify-center border-r-[1px] border-solid border-gray-600 px-2 py-2"
           >
-            <div className={cn(
-              "w-full flex items-center",
-              (col.id === 'status' || col.id === 'priority') ? "justify-stretch" : "justify-center"
-            )}>
+            <div className="w-full flex items-center justify-center">
               {renderCell(col)}
             </div>
           </div>
