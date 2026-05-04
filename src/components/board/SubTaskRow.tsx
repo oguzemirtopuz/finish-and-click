@@ -135,9 +135,12 @@ export function SubTaskRow({ task, isLast }: Props) {
           <div
             key={col.id}
             style={{ width: col.width }}
-            className="shrink-0 flex items-center justify-center border-r-[1px] border-solid border-gray-600 px-2 py-2"
+            className={cn(
+              "shrink-0 flex items-stretch border-r-[1px] border-solid border-gray-600",
+              (col.id === 'status' || col.id === 'priority') ? "p-0" : "px-2 py-2"
+            )}
           >
-            <div className="w-full flex items-center justify-center">
+            <div className="w-full h-full flex items-center justify-center">
               {content}
             </div>
           </div>

@@ -22,7 +22,7 @@ export function PriorityCell({ value, onChange }: Props) {
 
   const trigger = (
     <div
-      className="flex items-center justify-center text-[13px] font-medium w-full max-w-[130px] py-1.5 rounded-md text-white cursor-pointer hover:brightness-110 transition-all shadow-sm"
+      className="flex items-center justify-center text-[13px] font-bold w-full h-full text-white cursor-pointer hover:brightness-110 transition-all border-l border-white/20"
       style={{ background: cfg.bg }}
     >
       {cfg.label}

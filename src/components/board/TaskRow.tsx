@@ -205,7 +205,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
     switch (col.id) {
       case 'status':
         return (
-          <div className="flex items-center justify-center w-full">
+          <div className="flex items-center justify-center w-full h-full">
             <StatusCell value={task.status} onChange={handleStatus} />
           </div>
         )
@@ -227,7 +227,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
         )
       case 'priority':
         return (
-          <div className="flex items-center justify-center w-full">
+          <div className="flex items-center justify-center w-full h-full">
             <PriorityCell value={task.priority ?? 'medium'} onChange={(v) => update('priority', v as Task['priority'])} />
           </div>
         )
@@ -362,9 +362,12 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
           <div
             key={col.id}
             style={{ width: col.width }}
-            className="shrink-0 flex items-center justify-center border-r-[1px] border-solid border-gray-600 px-2 py-2"
+            className={cn(
+              "shrink-0 flex items-stretch border-r-[1px] border-solid border-gray-600",
+              (col.id === 'status' || col.id === 'priority') ? "p-0" : "px-2 py-2"
+            )}
           >
-            <div className="w-full flex items-center justify-center">
+            <div className="w-full h-full flex items-center justify-center">
               {renderCell(col)}
             </div>
           </div>

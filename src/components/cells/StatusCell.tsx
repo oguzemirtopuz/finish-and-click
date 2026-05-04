@@ -24,7 +24,7 @@ export function StatusCell({ value, onChange }: Props) {
 
   const trigger = (
     <div
-      className="flex items-center justify-center text-[13px] w-full max-w-[130px] py-1.5 rounded-md text-white font-medium select-none cursor-pointer hover:brightness-110 transition-all shadow-sm"
+      className="flex items-center justify-center text-[13px] w-full h-full text-white font-bold select-none cursor-pointer hover:brightness-110 transition-all border-l border-white/20"
       style={{ background: cfg.bg }}
     >
       {cfg.label}

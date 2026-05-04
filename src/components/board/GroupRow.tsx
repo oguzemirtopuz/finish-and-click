@@ -158,7 +158,7 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
           <div className="flex items-center gap-2 group/title min-w-0">
             <span
               onDoubleClick={() => setIsEditingName(true)}
-              className="font-bold text-white text-[13px] hover:text-blue-400 cursor-text truncate block whitespace-nowrap"
+              className="font-bold text-white text-[13px] hover:text-blue-400 cursor-text block whitespace-nowrap"
             >
               {group.name}
             </span>
@@ -251,10 +251,10 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
                 {/* Column Resizer */}
                 <div
                   onMouseDown={(e) => onResizeStart(e, col.id, col.width)}
-                  className="absolute right-[-8px] top-0 w-[16px] h-full cursor-col-resize z-20 group/handle flex justify-center"
+                  className="absolute right-[-12px] top-0 w-[24px] h-full cursor-col-resize z-20 group/handle flex justify-center"
                 >
                   <div className={cn(
-                    "w-[2px] h-full transition-colors",
+                    "w-[4px] h-full transition-colors",
                     resizingCol === col.id ? "bg-blue-500" : "bg-transparent group-hover/handle:bg-blue-500/50"
                   )} />
                 </div>
