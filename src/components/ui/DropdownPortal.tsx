@@ -5,13 +5,14 @@ interface Props {
   trigger: ReactNode
   children: ReactNode
   width?: number
+  wrapperClassName?: string
 }
 
 /**
  * Dropdown içeriğini document.body'ye portal ile taşır.
  * Tablo overflow:hidden sorununu tamamen çözer.
  */
-export function DropdownPortal({ trigger, children, width = 160 }: Props) {
+export function DropdownPortal({ trigger, children, width = 160, wrapperClassName = "cursor-pointer" }: Props) {
   const [open, setOpen] = useState(false)
   const [pos, setPos] = useState({ top: 0, left: 0 })
   const triggerRef = useRef<HTMLDivElement>(null)
@@ -50,7 +51,7 @@ export function DropdownPortal({ trigger, children, width = 160 }: Props) {
   }, [open])
 
   return (
-    <div ref={triggerRef} onClick={toggle} className="cursor-pointer">
+    <div ref={triggerRef} onClick={toggle} className={wrapperClassName}>
       {trigger}
       {open && createPortal(
         <div

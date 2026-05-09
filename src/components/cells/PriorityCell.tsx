@@ -30,7 +30,7 @@ export function PriorityCell({ value, onChange }: Props) {
   )
 
   return (
-    <DropdownPortal trigger={trigger} width={152}>
+    <DropdownPortal trigger={trigger} width={152} wrapperClassName="w-full h-full cursor-pointer">
       <div className="px-2 pb-1 pt-2">
         <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-1 mb-1">Öncelik Seç</p>
       </div>

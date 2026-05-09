@@ -32,7 +32,7 @@ export function StatusCell({ value, onChange }: Props) {
   )
 
   return (
-    <DropdownPortal trigger={trigger} width={172}>
+    <DropdownPortal trigger={trigger} width={172} wrapperClassName="w-full h-full cursor-pointer">
       <div className="px-2 pb-1 pt-2">
         <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-1 mb-1">Durum Seç</p>
       </div>
