@@ -44,7 +44,7 @@ export function Sidebar() {
         }}>
           <LayoutGrid size={18} color="white" />
         </div>
-        <span style={{ color: '#fff', fontWeight: 700, fontSize: 17 }}>Work OS</span>
+        <span style={{ color: '#fff', fontWeight: 700, fontSize: 17 }}>Finish and Click</span>
       </div>
 
       {/* Nav */}
