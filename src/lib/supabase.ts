@@ -228,10 +228,10 @@ export async function moveTaskToWorkspace(taskId: string, targetWsId: string): P
   // 4. Görevi ve tüm alt görevlerini hedef gruba taşı (or condition isn't ideal for update with single eq)
   if (!targetGroup) throw new Error('Hedef grup oluşturulamadı')
 
-  // Ana görev
+  // Ana görev (alt görevse root görev olur)
   const { error: moveErr } = await supabase
     .from('tasks')
-    .update({ group_id: targetGroup.id })
+    .update({ group_id: targetGroup.id, parent_id: null })
     .eq('id', taskId)
 
   if (moveErr) throw moveErr
@@ -250,6 +250,22 @@ export async function moveTaskToWorkspace(taskId: string, targetWsId: string): P
     old_value: 'personal',
     new_value: 'shared'
   })
+}
+
+/** Görevi (ve alt görevlerini) aynı veya başka bir gruba taşır. Alt görevse root görev yapar. */
+export async function moveTaskToGroup(taskId: string, targetGroupId: string): Promise<void> {
+  const { error } = await supabase
+    .from('tasks')
+    .update({ group_id: targetGroupId, parent_id: null })
+    .eq('id', taskId)
+
+  if (error) throw error
+
+  // Varsa alt görevleri de yeni gruba geçir
+  await supabase
+    .from('tasks')
+    .update({ group_id: targetGroupId })
+    .eq('parent_id', taskId)
 }
 
 

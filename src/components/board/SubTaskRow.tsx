@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Trash2, MessageSquare } from 'lucide-react'
+import { Trash2, MessageSquare, ExternalLink } from 'lucide-react'
 import type { Task } from '../../types/db'
 import { updateTask, deleteTask, recalculateProgress } from '../../lib/supabase'
 import { toast } from 'sonner'
@@ -9,6 +9,7 @@ import { PriorityCell } from '../cells/PriorityCell'
 import { ProgressCell } from '../cells/ProgressCell'
 import { ResponsibleCell } from '../cells/ResponsibleCell'
 import { STRIPE_W, CHECKBOX_W } from './columns'
+import { DropdownPortal } from '../ui/DropdownPortal'
 import { cn } from '../../lib/utils'
 
 interface Props {
@@ -17,10 +18,61 @@ interface Props {
 }
 
 export function SubTaskRow({ task, isLast }: Props) {
-  const { upsertTask, columns, setSelectedTaskId, commentCounts } = useBoardStore()
+  const { upsertTask, columns, setSelectedTaskId, commentCounts, workspaces, activeWorkspaceId, groups, tasks, setTasks } = useBoardStore()
   const hasNote = !!(task.notes && task.notes.trim()) || (commentCounts[task.id] ?? 0) > 0
   const [title, setTitle] = useState(task.title)
   const [editingTitle, setEditingTitle] = useState(false)
+  const [isMoving, setIsMoving] = useState(false)
+
+  const otherWorkspaces = workspaces.filter(w => w.id !== activeWorkspaceId)
+  const allGroups = groups
+
+  async function handleMoveToGroup(targetGroupId: string) {
+    if (!window.confirm('Alt görevi seçilen gruba taşımak istediğinize emin misiniz?')) return
+    try {
+      setIsMoving(true)
+      const { moveTaskToGroup } = await import('../../lib/supabase')
+      await moveTaskToGroup(task.id, targetGroupId)
+      
+      const updatedTasks = tasks.map(t => {
+        if (t.id === task.id) return { ...t, group_id: targetGroupId, parent_id: null }
+        return t
+      })
+      setTasks(updatedTasks)
+      
+      if (task.parent_id) {
+        const { recalculateProgress } = await import('../../lib/supabase')
+        await recalculateProgress(task.parent_id)
+      }
+      toast.success('Alt görev taşındı')
+    } catch (err: any) {
+      toast.error('Alt görev taşınırken hata: ' + err.message)
+    } finally {
+      setIsMoving(false)
+    }
+  }
+
+  async function handleMoveToWorkspace(targetWsId: string) {
+    const ws = workspaces.find(w => w.id === targetWsId)
+    if (!window.confirm(`Alt görevi "${ws?.name}" alanına taşımak istediğinize emin misiniz?`)) return
+    try {
+      setIsMoving(true)
+      const { moveTaskToWorkspace } = await import('../../lib/supabase')
+      await moveTaskToWorkspace(task.id, targetWsId)
+      
+      setTasks(tasks.filter(t => t.id !== task.id))
+      
+      if (task.parent_id) {
+        const { recalculateProgress } = await import('../../lib/supabase')
+        await recalculateProgress(task.parent_id)
+      }
+      toast.success('Alt görev başka bir çalışma alanına taşındı')
+    } catch (err: any) {
+      toast.error('Alt görev taşınırken hata: ' + err.message)
+    } finally {
+      setIsMoving(false)
+    }
+  }
 
   async function update<K extends keyof Task>(field: K, value: Task[K]) {
     const updated = { ...task, [field]: value }
@@ -105,9 +157,68 @@ export function SubTaskRow({ task, isLast }: Props) {
         <button
           onClick={handleDelete}
           className="shrink-0 text-gray-300 hover:text-red-500 opacity-0 group-hover/subtask:opacity-100 transition-all ml-auto"
+          title="Alt Görevi Sil"
         >
           <Trash2 size={11} />
         </button>
+
+        <DropdownPortal
+          trigger={
+            <button
+              disabled={isMoving}
+              className={cn(
+                "shrink-0 ml-1 text-gray-400 hover:text-blue-400 opacity-0 group-hover/subtask:opacity-100 transition-all",
+                isMoving && "animate-pulse"
+              )}
+              title="Başka Gruba/Alana Taşı"
+            >
+              <ExternalLink size={11} />
+            </button>
+          }
+          width={220}
+        >
+          <div className="max-h-64 overflow-y-auto">
+            <div className="p-2 border-b border-gray-100/10 bg-[#1A1F36]">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Hangi Gruba Taşınsın?</span>
+            </div>
+            <div className="py-1">
+              {allGroups.length === 0 && otherWorkspaces.length === 0 && (
+                <div className="px-3 py-2 text-[11px] text-gray-500 italic">Başka hedef bulunamadı.</div>
+              )}
+              
+              {/* Aynı çalışma alanındaki tüm gruplar */}
+              {allGroups.map(g => (
+                <button
+                  key={g.id}
+                  onMouseDown={(e) => { e.preventDefault(); handleMoveToGroup(g.id) }}
+                  className="w-full flex items-center justify-between px-3 py-2 text-xs text-gray-300 hover:bg-[#20263c] hover:text-white transition-colors text-left"
+                >
+                  <span className="truncate pr-2">↳ {g.name}</span>
+                </button>
+              ))}
+
+              {otherWorkspaces.length > 0 && (
+                <>
+                  <div className="px-2 py-1 mt-1 border-t border-gray-100/10 bg-[#1A1F36]">
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Diğer Alanlar</span>
+                  </div>
+                  {otherWorkspaces.map(ws => (
+                    <button
+                      key={ws.id}
+                      onMouseDown={(e) => { e.preventDefault(); handleMoveToWorkspace(ws.id) }}
+                      className="w-full flex items-center justify-between px-3 py-2 text-xs text-gray-300 hover:bg-[#20263c] hover:text-white transition-colors text-left"
+                    >
+                      <span className="truncate pr-2">{ws.name}</span>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100/10 text-gray-400 font-medium shrink-0">
+                        {ws.type === 'personal' ? 'Kişisel' : 'Ortak'}
+                      </span>
+                    </button>
+                  ))}
+                </>
+              )}
+            </div>
+          </div>
+        </DropdownPortal>
       </div>
 
       {/* Dinamik hücreler */}
