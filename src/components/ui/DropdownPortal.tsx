@@ -50,7 +50,7 @@ export function DropdownPortal({ trigger, children, width = 160 }: Props) {
   }, [open])
 
   return (
-    <div ref={triggerRef} onClick={toggle} className="w-full h-full cursor-pointer">
+    <div ref={triggerRef} onClick={toggle} className="cursor-pointer">
       {trigger}
       {open && createPortal(
         <div
