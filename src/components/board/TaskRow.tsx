@@ -12,7 +12,7 @@ import { PriorityCell } from '../cells/PriorityCell'
 import { ResponsibleCell } from '../cells/ResponsibleCell'
 import { BudgetCell } from '../cells/BudgetCell'
 import { SubTaskRow } from './SubTaskRow'
-import { STRIPE_W, CHECKBOX_W } from './columns'
+import { STRIPE_W, CHECKBOX_W, GRIP_W } from './columns'
 import { DropdownPortal } from '../ui/DropdownPortal'
 import { cn } from '../../lib/utils'
 import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
@@ -302,19 +302,20 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
         expanded && 'bg-[#131520]',
         isOver && 'ring-2 ring-blue-500 ring-inset bg-blue-500/10'
       )}>
-        {/* Drag Handle */}
-        <div 
-          {...listeners}
-          className="absolute left-[-20px] top-1/2 -translate-y-1/2 opacity-0 group-hover/row:opacity-100 cursor-grab active:cursor-grabbing p-1 text-gray-500 hover:text-blue-500 transition-opacity z-50"
-        >
-          <GripVertical size={16} />
-        </div>
-
         {/* Renk şeridi */}
         <div
           className="shrink-0 transition-opacity"
           style={{ width: STRIPE_W, background: groupColor, opacity: expanded ? 1 : 0 }}
         />
+
+        {/* Drag Handle */}
+        <div 
+          {...listeners}
+          style={{ width: GRIP_W }}
+          className="flex items-center justify-center shrink-0 cursor-grab active:cursor-grabbing text-gray-600 hover:text-blue-500 transition-colors group-hover/row:opacity-100 opacity-30"
+        >
+          <GripVertical size={16} />
+        </div>
 
         {/* Checkbox */}
         <div className="flex items-center justify-center shrink-0" style={{ width: CHECKBOX_W }}>

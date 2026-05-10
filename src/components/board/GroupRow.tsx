@@ -6,7 +6,7 @@ import { insertTask, updateGroup, deleteGroup, moveGroupToWorkspace } from '../.
 import { DropdownPortal } from '../ui/DropdownPortal'
 import { TaskRow } from './TaskRow'
 import { SummaryRow } from './SummaryRow'
-import { STRIPE_W, CHECKBOX_W } from './columns'
+import { STRIPE_W, CHECKBOX_W, GRIP_W } from './columns'
 import { cn } from '../../lib/utils'
 import { toast } from 'sonner'
 import { useDroppable } from '@dnd-kit/core'
@@ -243,6 +243,7 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
           >
             {/* Sol renkli şerit — rows ile aynı yaklaşım */}
             <div style={{ width: STRIPE_W, background: group.color }} className="shrink-0 self-stretch rounded-tl-md" />
+            <div style={{ width: GRIP_W }} className="shrink-0" />
             <div style={{ width: CHECKBOX_W }} className="shrink-0" />
             {visibleCols.map((col) => (
               <div
@@ -296,6 +297,7 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
           <div className="border-t border-[#1D1F2B] rounded-b-md overflow-hidden bg-[#0F111A] flex items-stretch">
             {/* Sol renkli şerit — rows/header ile aynı genişlik */}
             <div style={{ width: STRIPE_W, background: `${group.color}30` }} className="shrink-0 self-stretch" />
+            <div style={{ width: GRIP_W }} className="shrink-0" />
             {/* Checkbox spacer — hizalama için */}
             <div style={{ width: CHECKBOX_W }} className="shrink-0" />
             

@@ -8,7 +8,7 @@ import { StatusCell } from '../cells/StatusCell'
 import { PriorityCell } from '../cells/PriorityCell'
 import { ProgressCell } from '../cells/ProgressCell'
 import { ResponsibleCell } from '../cells/ResponsibleCell'
-import { STRIPE_W, CHECKBOX_W } from './columns'
+import { STRIPE_W, CHECKBOX_W, GRIP_W } from './columns'
 import { DropdownPortal } from '../ui/DropdownPortal'
 import { cn } from '../../lib/utils'
 import { useSortable } from '@dnd-kit/sortable'
@@ -132,16 +132,17 @@ export function SubTaskRow({ task, isLast }: Props) {
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
       <div className="flex items-stretch border-b border-[#1D1F2B] bg-[#0F111A] hover:bg-[#1D1F2B] transition-colors group/subtask relative">
+        {/* Stripe */}
+        <div style={{ width: STRIPE_W }} className="shrink-0 bg-transparent" />
+
         {/* Drag Handle */}
         <div 
           {...listeners}
-          className="absolute left-[-20px] top-1/2 -translate-y-1/2 opacity-0 group-hover/subtask:opacity-100 cursor-grab active:cursor-grabbing p-1 text-gray-500 hover:text-blue-500 transition-opacity z-50"
+          style={{ width: GRIP_W }}
+          className="flex items-center justify-center shrink-0 cursor-grab active:cursor-grabbing text-gray-600 hover:text-blue-500 transition-colors group-hover/subtask:opacity-100 opacity-20"
         >
           <GripVertical size={14} />
         </div>
-
-        {/* Stripe */}
-        <div style={{ width: STRIPE_W }} className="shrink-0 bg-transparent" />
 
         {/* Sol bağlantı çizgisi + checkbox */}
         <div className="relative shrink-0" style={{ width: CHECKBOX_W }}>
