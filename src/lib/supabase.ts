@@ -268,6 +268,34 @@ export async function moveTaskToGroup(taskId: string, targetGroupId: string): Pr
     .eq('parent_id', taskId)
 }
 
+/** Görevi başka bir ana görevin altına subtask olarak taşır. */
+export async function moveTaskToParent(taskId: string, parentId: string): Promise<void> {
+  // Önce parent görevin grubunu bulalım ki görev o gruba geçsin
+  const { data: parent } = await supabase
+    .from('tasks')
+    .select('group_id')
+    .eq('id', parentId)
+    .single()
+
+  if (!parent) throw new Error('Hedef ana görev bulunamadı')
+
+  const { error } = await supabase
+    .from('tasks')
+    .update({ 
+      parent_id: parentId, 
+      group_id: parent.group_id 
+    })
+    .eq('id', taskId)
+
+  if (error) throw error
+
+  // Varsa alt görevleri de yeni gruba geçir
+  await supabase
+    .from('tasks')
+    .update({ group_id: parent.group_id })
+    .eq('parent_id', taskId)
+}
+
 /** Birden fazla görevin sırasını ve konumunu günceller */
 export async function updateTasksOrder(updates: { id: string, order: number, group_id?: string, parent_id?: string | null }[]): Promise<void> {
   // Supabase upsert performs a merge if we only provide id and the fields to change, 

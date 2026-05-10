@@ -96,6 +96,29 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
     }
   }
 
+  async function handleMoveToParent(parentId: string) {
+    if (!window.confirm('Görevi bu görevin altına taşımak istediğinize emin misiniz?')) return
+    try {
+      setIsMoving(true)
+      const { moveTaskToParent, recalculateProgress } = await import('../../lib/supabase')
+      await moveTaskToParent(task.id, parentId)
+      
+      const parentTask = tasks.find(t => t.id === parentId)
+      const updatedTasks = tasks.map(t => {
+        if (t.id === task.id) return { ...t, parent_id: parentId, group_id: parentTask?.group_id ?? t.group_id }
+        if (t.parent_id === task.id) return { ...t, group_id: parentTask?.group_id ?? t.group_id }
+        return t
+      })
+      setTasks(updatedTasks)
+      await recalculateProgress(parentId)
+      toast.success('Görev alt görev olarak taşındı')
+    } catch (err: any) {
+      toast.error('Görev taşınırken hata: ' + err.message)
+    } finally {
+      setIsMoving(false)
+    }
+  }
+
   async function update<K extends keyof Task>(field: K, value: Task[K]) {
     upsertTask({ ...task, [field]: value })
     await updateTask(task.id, { [field]: value } as Partial<Task>)
@@ -412,6 +435,30 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
                     <span className="truncate pr-2">↳ {g.name}</span>
                   </button>
                 ))}
+
+                {/* Root Görevler (Parent olabilecekler) */}
+                <div className="px-2 py-1 mt-1 border-t border-gray-100/10 bg-[#1A1F36]">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Hangi Görevin Altına?</span>
+                </div>
+                {groups.map(g => {
+                  const groupTasks = tasks.filter(t => t.group_id === g.id && !t.parent_id && t.id !== task.id)
+                  if (groupTasks.length === 0) return null
+                  return (
+                    <div key={g.id}>
+                      <div className="px-3 py-1 text-[9px] text-gray-500 font-medium bg-black/20 uppercase tracking-tight">{g.name}</div>
+                      {groupTasks.map(gt => (
+                        <button
+                          key={gt.id}
+                          onMouseDown={(e) => { e.preventDefault(); handleMoveToParent(gt.id) }}
+                          className="w-full flex items-center justify-between px-4 py-1.5 text-[11px] text-gray-300 hover:bg-[#20263c] hover:text-white transition-colors text-left"
+                        >
+                          <span className="truncate">→ {gt.title}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )
+                })}
+
                 {otherWorkspaces.length > 0 && (
                   <>
                     <div className="px-2 py-1 mt-1 border-t border-gray-100/10 bg-[#1A1F36]">

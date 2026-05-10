@@ -91,6 +91,31 @@ export function SubTaskRow({ task, isLast }: Props) {
     }
   }
 
+  async function handleMoveToParent(parentId: string) {
+    if (!window.confirm('Alt görevi seçilen görevin altına taşımak istediğinize emin misiniz?')) return
+    try {
+      setIsMoving(true)
+      const oldParentId = task.parent_id
+      const { moveTaskToParent, recalculateProgress } = await import('../../lib/supabase')
+      await moveTaskToParent(task.id, parentId)
+      
+      const parentTask = tasks.find(t => t.id === parentId)
+      const updatedTasks = tasks.map(t => {
+        if (t.id === task.id) return { ...t, parent_id: parentId, group_id: parentTask?.group_id ?? t.group_id }
+        return t
+      })
+      setTasks(updatedTasks)
+      
+      if (oldParentId) await recalculateProgress(oldParentId)
+      await recalculateProgress(parentId)
+      toast.success('Alt görev başka bir göreve taşındı')
+    } catch (err: any) {
+      toast.error('Alt görev taşınırken hata: ' + err.message)
+    } finally {
+      setIsMoving(false)
+    }
+  }
+
   async function update<K extends keyof Task>(field: K, value: Task[K]) {
     const updated = { ...task, [field]: value }
     upsertTask(updated)
@@ -219,6 +244,37 @@ export function SubTaskRow({ task, isLast }: Props) {
                     <span className="truncate pr-2">↳ {g.name}</span>
                   </button>
                 ))}
+
+                {/* Root Görevler (Parent olabilecekler) */}
+                <div className="px-2 py-1 mt-1 border-t border-gray-100/10 bg-[#1A1F36]">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Hangi Görevin Altına?</span>
+                </div>
+                {groups.map(g => {
+                  const groupTasks = tasks.filter(t => t.group_id === g.id && !t.parent_id)
+                  if (groupTasks.length === 0) return null
+                  return (
+                    <div key={g.id}>
+                      <div className="px-3 py-1 text-[9px] text-gray-500 font-medium bg-black/20 uppercase tracking-tight">{g.name}</div>
+                      {groupTasks.map(gt => (
+                        <button
+                          key={gt.id}
+                          disabled={gt.id === task.parent_id}
+                          onMouseDown={(e) => { e.preventDefault(); handleMoveToParent(gt.id) }}
+                          className={cn(
+                            "w-full flex items-center justify-between px-4 py-1.5 text-[11px] transition-colors text-left",
+                            gt.id === task.parent_id 
+                              ? "text-blue-400 bg-blue-500/5 cursor-default" 
+                              : "text-gray-300 hover:bg-[#20263c] hover:text-white"
+                          )}
+                        >
+                          <span className="truncate">→ {gt.title}</span>
+                          {gt.id === task.parent_id && <span className="text-[8px] bg-blue-500/20 px-1 rounded">Mevcut</span>}
+                        </button>
+                      ))}
+                    </div>
+                  )
+                })}
+
                 {otherWorkspaces.length > 0 && (
                   <>
                     <div className="px-2 py-1 mt-1 border-t border-gray-100/10 bg-[#1A1F36]">
