@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronRight, Plus, Pencil, Trash2, ExternalLink } from 'lucide-react'
-// Cache buster for Netlify deploy: 2026-04-27-v2
 import type { Task, TaskGroup } from '../../types/db'
 import { useBoardStore } from '../../lib/store'
 import { insertTask, updateGroup, deleteGroup, moveGroupToWorkspace } from '../../lib/supabase'
@@ -10,13 +9,14 @@ import { SummaryRow } from './SummaryRow'
 import { STRIPE_W, CHECKBOX_W } from './columns'
 import { cn } from '../../lib/utils'
 import { toast } from 'sonner'
+import { useDroppable } from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
 interface Props {
   group: TaskGroup
   tasks: Task[]
   allTasks: Task[]
 }
-
 
 export function GroupRow({ group, tasks, allTasks }: Props) {
   const [isEditingName, setIsEditingName] = useState(false)
@@ -25,12 +25,16 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
   const [adding, setAdding] = useState(false)
   const [newTitle, setNewTitle] = useState('')
 
+  const { setNodeRef, isOver } = useDroppable({
+    id: group.id,
+  })
+
   const { workspaces, activeWorkspaceId, setActiveWorkspace, columns, collapsedGroups, toggleCollapse, updateColumnWidth } = useBoardStore()
 
   const collapsed = collapsedGroups.has(group.id)
   const otherWorkspaces = workspaces.filter(w => w.id !== activeWorkspaceId)
 
-  const rootTasks = tasks.filter((t) => t.parent_id === null)
+  const rootTasks = tasks.filter((t) => t.parent_id === null).sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
   const visibleCols = columns.filter((c) => c.visible)
 
   // Resizer state
@@ -58,7 +62,7 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
   }
 
   function getSubtasks(parentId: string) {
-    return allTasks.filter((t) => t.parent_id === parentId)
+    return allTasks.filter((t) => t.parent_id === parentId).sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
   }
 
   async function addTask() {
@@ -111,11 +115,9 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
       setIsMoving(true)
       await moveGroupToWorkspace(group.id, targetId)
 
-      // Optimizasyon: Yerel store'dan hemen kaldır
       const store = useBoardStore.getState()
       store.setGroups(store.groups.filter(g => g.id !== group.id))
 
-      // Kullanıcıya bilgi verip geçiş yapmak isteyip istemediğini soralım
       if (window.confirm(`Grup taşındı! "${target.name}" alanına gitmek ister misiniz?`)) {
         setActiveWorkspace(targetId)
       }
@@ -128,9 +130,14 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
     }
   }
 
-
   return (
-    <div className="mb-8 group">
+    <div 
+      ref={setNodeRef}
+      className={cn(
+        "mb-8 group/outer transition-colors rounded-lg p-1",
+        isOver && "bg-blue-500/10 ring-2 ring-blue-500/50"
+      )}
+    >
       {/* Grup başlığı */}
       <div className="flex items-center gap-2 mb-2 px-1 group overflow-hidden">
         <button
@@ -264,21 +271,23 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
             <div style={{ width: STRIPE_W }} className="shrink-0 bg-transparent border-b border-[#1D1F2B]" />
           </div>
 
-          {/* Görev satırları */}
-          {rootTasks.length === 0 && (
-            <div className="py-8 text-center text-xs text-gray-400">
-              Bu grupta henüz görev yok
-            </div>
-          )}
-          {rootTasks.map((task) => (
-            <TaskRow
-              key={task.id}
-              task={task}
-              subtasks={getSubtasks(task.id)}
-              groupColor={group.color}
-              columns={columns}
-            />
-          ))}
+          <SortableContext items={rootTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+            {/* Görev satırları */}
+            {rootTasks.length === 0 && (
+              <div className="py-8 text-center text-xs text-gray-400">
+                Bu grupta henüz görev yok
+              </div>
+            )}
+            {rootTasks.map((task) => (
+              <TaskRow
+                key={task.id}
+                task={task}
+                subtasks={getSubtasks(task.id)}
+                groupColor={group.color}
+                columns={columns}
+              />
+            ))}
+          </SortableContext>
 
           {/* Özet satırı */}
           <SummaryRow tasks={tasks} columns={columns} groupColor={group.color} />

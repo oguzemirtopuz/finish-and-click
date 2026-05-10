@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Trash2, MessageSquare, ExternalLink } from 'lucide-react'
+import { Trash2, MessageSquare, ExternalLink, GripVertical } from 'lucide-react'
 import type { Task } from '../../types/db'
 import { updateTask, deleteTask, recalculateProgress } from '../../lib/supabase'
 import { toast } from 'sonner'
@@ -11,6 +11,8 @@ import { ResponsibleCell } from '../cells/ResponsibleCell'
 import { STRIPE_W, CHECKBOX_W } from './columns'
 import { DropdownPortal } from '../ui/DropdownPortal'
 import { cn } from '../../lib/utils'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 interface Props {
   task: Task
@@ -23,6 +25,21 @@ export function SubTaskRow({ task, isLast }: Props) {
   const [title, setTitle] = useState(task.title)
   const [editingTitle, setEditingTitle] = useState(false)
   const [isMoving, setIsMoving] = useState(false)
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: task.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
 
   const otherWorkspaces = workspaces.filter(w => w.id !== activeWorkspaceId)
   const allGroups = groups
@@ -80,7 +97,6 @@ export function SubTaskRow({ task, isLast }: Props) {
     await updateTask(task.id, { [field]: value } as Partial<Task>)
 
     if (field === 'status' && task.parent_id) {
-      // Optimistic parent progress update
       const store = useBoardStore.getState()
       const siblings = store.tasks.filter(t => t.parent_id === task.parent_id)
       const merged = siblings.map(t => t.id === task.id ? updated : t)
@@ -88,7 +104,6 @@ export function SubTaskRow({ task, isLast }: Props) {
       const progress = merged.length > 0 ? Math.round((done / merged.length) * 100) : 0
       const parent = store.tasks.find(t => t.id === task.parent_id)
       if (parent) upsertTask({ ...parent, progress })
-
       await recalculateProgress(task.parent_id)
     }
   }
@@ -115,151 +130,157 @@ export function SubTaskRow({ task, isLast }: Props) {
   const titleWidth = columns.find((c) => c.id === 'title')?.width ?? 300
 
   return (
-    <div className="flex items-stretch border-b border-[#1D1F2B] bg-[#0F111A] hover:bg-[#1D1F2B] transition-colors group/subtask">
-      {/* Stripe */}
-      <div style={{ width: STRIPE_W }} className="shrink-0 bg-transparent" />
-
-      {/* Sol bağlantı çizgisi + checkbox */}
-      <div className="relative shrink-0" style={{ width: CHECKBOX_W }}>
-        <div className="absolute left-[50%] top-0 w-px bg-[#1D1F2B]" style={{ height: isLast ? '50%' : '100%' }} />
-        <div className="absolute left-[50%] top-[50%] h-px bg-[#1D1F2B]" style={{ width: '50%' }} />
-        <div className="absolute inset-0 flex items-center justify-end pr-1">
-          <input
-            type="checkbox"
-            className="accent-blue-600 cursor-pointer w-3 h-3"
-            checked={task.status === 'done'}
-            onChange={() => update('status', task.status === 'done' ? 'todo' : 'done')}
-          />
+    <div ref={setNodeRef} style={style} {...attributes}>
+      <div className="flex items-stretch border-b border-[#1D1F2B] bg-[#0F111A] hover:bg-[#1D1F2B] transition-colors group/subtask relative">
+        {/* Drag Handle */}
+        <div 
+          {...listeners}
+          className="absolute left-[-20px] top-1/2 -translate-y-1/2 opacity-0 group-hover/subtask:opacity-100 cursor-grab active:cursor-grabbing p-1 text-gray-500 hover:text-blue-500 transition-opacity z-50"
+        >
+          <GripVertical size={14} />
         </div>
-      </div>
 
-      {/* Title */}
-      <div className="flex items-center gap-2 shrink-0 px-4 py-3 border-r-[1px] border-solid border-gray-600 min-w-0 overflow-hidden" style={{ width: titleWidth }}>
-        {editingTitle ? (
-          <input
-            autoFocus value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onBlur={commitTitle}
-            onKeyDown={(e) => e.key === 'Enter' && commitTitle()}
-            maxLength={255}
-            className="flex-1 text-xs outline-none bg-transparent border-b border-blue-400 py-0.5"
-          />
-        ) : (
-          <span
-            onDoubleClick={() => setEditingTitle(true)}
-            onClick={() => setSelectedTaskId(task.id)}
-            className="flex-1 text-xs text-gray-400 truncate cursor-pointer hover:text-blue-400 transition-colors group-hover/subtask:text-white"
-            style={{ textDecoration: task.status === 'done' ? 'line-through' : 'none' }}
-          >
-            {task.title}
-          </span>
-        )}
-        <button
-          onClick={handleDelete}
-          className="shrink-0 text-gray-300 hover:text-red-500 opacity-0 group-hover/subtask:opacity-100 transition-all ml-auto"
-          title="Alt Görevi Sil"
-        >
-          <Trash2 size={11} />
-        </button>
+        {/* Stripe */}
+        <div style={{ width: STRIPE_W }} className="shrink-0 bg-transparent" />
 
-        <DropdownPortal
-          trigger={
-            <button
-              disabled={isMoving}
-              className={cn(
-                "shrink-0 ml-1 text-gray-400 hover:text-blue-400 opacity-0 group-hover/subtask:opacity-100 transition-all",
-                isMoving && "animate-pulse"
-              )}
-              title="Başka Gruba/Alana Taşı"
+        {/* Sol bağlantı çizgisi + checkbox */}
+        <div className="relative shrink-0" style={{ width: CHECKBOX_W }}>
+          <div className="absolute left-[50%] top-0 w-px bg-[#1D1F2B]" style={{ height: isLast ? '50%' : '100%' }} />
+          <div className="absolute left-[50%] top-[50%] h-px bg-[#1D1F2B]" style={{ width: '50%' }} />
+          <div className="absolute inset-0 flex items-center justify-end pr-1">
+            <input
+              type="checkbox"
+              className="accent-blue-600 cursor-pointer w-3 h-3"
+              checked={task.status === 'done'}
+              onChange={() => update('status', task.status === 'done' ? 'todo' : 'done')}
+            />
+          </div>
+        </div>
+
+        {/* Title */}
+        <div className="flex items-center gap-2 shrink-0 px-4 py-3 border-r-[1px] border-solid border-gray-600 min-w-0 overflow-hidden" style={{ width: titleWidth }}>
+          {editingTitle ? (
+            <input
+              autoFocus value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={commitTitle}
+              onKeyDown={(e) => e.key === 'Enter' && commitTitle()}
+              maxLength={255}
+              className="flex-1 text-xs outline-none bg-transparent border-b border-blue-400 py-0.5"
+            />
+          ) : (
+            <span
+              onDoubleClick={() => setEditingTitle(true)}
+              onClick={() => setSelectedTaskId(task.id)}
+              className="flex-1 text-xs text-gray-400 truncate cursor-pointer hover:text-blue-400 transition-colors group-hover/subtask:text-white"
+              style={{ textDecoration: task.status === 'done' ? 'line-through' : 'none' }}
             >
-              <ExternalLink size={11} />
-            </button>
-          }
-          width={220}
-        >
-          <div className="max-h-64 overflow-y-auto">
-            <div className="p-2 border-b border-gray-100/10 bg-[#1A1F36]">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Hangi Gruba Taşınsın?</span>
-            </div>
-            <div className="py-1">
-              {allGroups.length === 0 && otherWorkspaces.length === 0 && (
-                <div className="px-3 py-2 text-[11px] text-gray-500 italic">Başka hedef bulunamadı.</div>
-              )}
-              
-              {/* Aynı çalışma alanındaki tüm gruplar */}
-              {allGroups.map(g => (
-                <button
-                  key={g.id}
-                  onMouseDown={(e) => { e.preventDefault(); handleMoveToGroup(g.id) }}
-                  className="w-full flex items-center justify-between px-3 py-2 text-xs text-gray-300 hover:bg-[#20263c] hover:text-white transition-colors text-left"
-                >
-                  <span className="truncate pr-2">↳ {g.name}</span>
-                </button>
-              ))}
-
-              {otherWorkspaces.length > 0 && (
-                <>
-                  <div className="px-2 py-1 mt-1 border-t border-gray-100/10 bg-[#1A1F36]">
-                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Diğer Alanlar</span>
-                  </div>
-                  {otherWorkspaces.map(ws => (
-                    <button
-                      key={ws.id}
-                      onMouseDown={(e) => { e.preventDefault(); handleMoveToWorkspace(ws.id) }}
-                      className="w-full flex items-center justify-between px-3 py-2 text-xs text-gray-300 hover:bg-[#20263c] hover:text-white transition-colors text-left"
-                    >
-                      <span className="truncate pr-2">{ws.name}</span>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100/10 text-gray-400 font-medium shrink-0">
-                        {ws.type === 'personal' ? 'Kişisel' : 'Ortak'}
-                      </span>
-                    </button>
-                  ))}
-                </>
-              )}
-            </div>
-          </div>
-        </DropdownPortal>
-      </div>
-
-      {/* Dinamik hücreler */}
-      {columns.filter((c) => c.visible && c.id !== 'title').map((col) => {
-        let content = null
-        if (col.id === 'status') content = <StatusCell value={task.status} onChange={(v) => update('status', v as Task['status'])} />
-        if (col.id === 'priority') content = <PriorityCell value={task.priority} onChange={(v) => update('priority', v as Task['priority'])} />
-        if (col.id === 'progress') content = <ProgressCell value={task.progress} />
-        if (col.id === 'assignee') content = <ResponsibleCell value={task.assigned_to} onChange={(v) => update('assigned_to', v)} />
-        if (col.id === 'notes') content = (
+              {task.title}
+            </span>
+          )}
           <button
-            onClick={() => setSelectedTaskId(task.id)}
-            className={cn(
-              "p-1 rounded transition-colors",
-              hasNote
-                ? "text-blue-500 bg-blue-500/10 hover:bg-blue-500/20"
-                : "text-[#808191] hover:bg-[#252836] hover:text-blue-400"
-            )}
+            onClick={handleDelete}
+            className="shrink-0 text-gray-300 hover:text-red-500 opacity-0 group-hover/subtask:opacity-100 transition-all ml-auto"
+            title="Alt Görevi Sil"
           >
-            <MessageSquare size={14} fill={hasNote ? "currentColor" : "none"} />
+            <Trash2 size={11} />
           </button>
-        )
 
-        return (
-          <div
-            key={col.id}
-            style={{ width: col.width }}
-            className={cn(
-              "shrink-0 flex items-stretch border-r-[1px] border-solid border-gray-600",
-              (col.id === 'status' || col.id === 'priority') ? "p-0" : "px-2 py-2"
-            )}
+          <DropdownPortal
+            trigger={
+              <button
+                disabled={isMoving}
+                className={cn(
+                  "shrink-0 ml-1 text-gray-400 hover:text-blue-400 opacity-0 group-hover/subtask:opacity-100 transition-all",
+                  isMoving && "animate-pulse"
+                )}
+                title="Başka Gruba/Alana Taşı"
+              >
+                <ExternalLink size={11} />
+              </button>
+            }
+            width={220}
           >
-            <div className="w-full h-full flex items-center justify-center">
-              {content}
+            <div className="max-h-64 overflow-y-auto">
+              <div className="p-2 border-b border-gray-100/10 bg-[#1A1F36]">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Hangi Gruba Taşınsın?</span>
+              </div>
+              <div className="py-1">
+                {allGroups.length === 0 && otherWorkspaces.length === 0 && (
+                  <div className="px-3 py-2 text-[11px] text-gray-500 italic">Başka hedef bulunamadı.</div>
+                )}
+                {allGroups.map(g => (
+                  <button
+                    key={g.id}
+                    onMouseDown={(e) => { e.preventDefault(); handleMoveToGroup(g.id) }}
+                    className="w-full flex items-center justify-between px-3 py-2 text-xs text-gray-300 hover:bg-[#20263c] hover:text-white transition-colors text-left"
+                  >
+                    <span className="truncate pr-2">↳ {g.name}</span>
+                  </button>
+                ))}
+                {otherWorkspaces.length > 0 && (
+                  <>
+                    <div className="px-2 py-1 mt-1 border-t border-gray-100/10 bg-[#1A1F36]">
+                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Diğer Alanlar</span>
+                    </div>
+                    {otherWorkspaces.map(ws => (
+                      <button
+                        key={ws.id}
+                        onMouseDown={(e) => { e.preventDefault(); handleMoveToWorkspace(ws.id) }}
+                        className="w-full flex items-center justify-between px-3 py-2 text-xs text-gray-300 hover:bg-[#20263c] hover:text-white transition-colors text-left"
+                      >
+                        <span className="truncate pr-2">{ws.name}</span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100/10 text-gray-400 font-medium shrink-0">
+                          {ws.type === 'personal' ? 'Kişisel' : 'Ortak'}
+                        </span>
+                      </button>
+                    ))}
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        )
-      })}
+          </DropdownPortal>
+        </div>
 
-      {/* Sağ simetri barı */}
-      <div style={{ width: STRIPE_W }} className="shrink-0 bg-transparent" />
+        {columns.filter((c) => c.visible && c.id !== 'title').map((col) => {
+          let content = null
+          if (col.id === 'status') content = <StatusCell value={task.status} onChange={(v) => update('status', v as Task['status'])} />
+          if (col.id === 'priority') content = <PriorityCell value={task.priority} onChange={(v) => update('priority', v as Task['priority'])} />
+          if (col.id === 'progress') content = <ProgressCell value={task.progress} />
+          if (col.id === 'assignee') content = <ResponsibleCell value={task.assigned_to} onChange={(v) => update('assigned_to', v)} />
+          if (col.id === 'notes') content = (
+            <button
+              onClick={() => setSelectedTaskId(task.id)}
+              className={cn(
+                "p-1 rounded transition-colors",
+                hasNote
+                  ? "text-blue-500 bg-blue-500/10 hover:bg-blue-500/20"
+                  : "text-[#808191] hover:bg-[#252836] hover:text-blue-400"
+              )}
+            >
+              <MessageSquare size={14} fill={hasNote ? "currentColor" : "none"} />
+            </button>
+          )
+
+          return (
+            <div
+              key={col.id}
+              style={{ width: col.width }}
+              className={cn(
+                "shrink-0 flex items-stretch border-r-[1px] border-solid border-gray-600",
+                (col.id === 'status' || col.id === 'priority') ? "p-0" : "px-2 py-2"
+              )}
+            >
+              <div className="w-full h-full flex items-center justify-center">
+                {content}
+              </div>
+            </div>
+          )
+        })}
+
+        {/* Sağ simetri barı */}
+        <div style={{ width: STRIPE_W }} className="shrink-0 bg-transparent" />
+      </div>
     </div>
   )
 }

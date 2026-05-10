@@ -268,6 +268,21 @@ export async function moveTaskToGroup(taskId: string, targetGroupId: string): Pr
     .eq('parent_id', taskId)
 }
 
+/** Birden fazla görevin sırasını ve konumunu günceller */
+export async function updateTasksOrder(updates: { id: string, order: number, group_id?: string, parent_id?: string | null }[]): Promise<void> {
+  // Supabase upsert performs a merge if we only provide id and the fields to change, 
+  // but it's safer to use individual updates or a single call if we know the schema.
+  // We'll use a loop for now to ensure we don't accidentally wipe other fields.
+  const promises = updates.map(u => {
+    const { id, ...fields } = u
+    return supabase.from('tasks').update(fields).eq('id', id)
+  })
+  
+  const results = await Promise.all(promises)
+  const firstError = results.find(r => r.error)?.error
+  if (firstError) throw firstError
+}
+
 
 /** Ana görevin progress'ini alt görevlere göre yeniden hesapla */
 export async function recalculateProgress(parentId: string): Promise<void> {

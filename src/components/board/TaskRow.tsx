@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronRight, Pencil, Trash2, Plus, MessageSquare, ExternalLink } from 'lucide-react'
+import { ChevronRight, Pencil, Trash2, Plus, MessageSquare, ExternalLink, GripVertical } from 'lucide-react'
 import type { Task } from '../../types/db'
 import { updateTask, deleteTask, recalculateProgress, insertTask, markSubtasksDone } from '../../lib/supabase'
 import { toast } from 'sonner'
@@ -15,6 +15,9 @@ import { SubTaskRow } from './SubTaskRow'
 import { STRIPE_W, CHECKBOX_W } from './columns'
 import { DropdownPortal } from '../ui/DropdownPortal'
 import { cn } from '../../lib/utils'
+import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { useDroppable } from '@dnd-kit/core'
 
 interface Props {
   task: Task
@@ -32,6 +35,25 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
   const [addingSubtask, setAddingSubtask] = useState(false)
   const [subTitle, setSubTitle] = useState('')
   const [isMoving, setIsMoving] = useState(false)
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: task.id })
+
+  const { setNodeRef: setDroppableRef, isOver } = useDroppable({
+    id: task.id
+  })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
 
   const otherWorkspaces = workspaces.filter(w => w.id !== activeWorkspaceId)
   const otherGroups = groups.filter(g => g.id !== task.group_id)
@@ -83,66 +105,43 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
     try {
       const store = useBoardStore.getState()
       const currentWs = store.workspaces.find(w => w.id === store.activeWorkspaceId)
-
-      // Optimistic update
       upsertTask({ ...task, assigned_to: value })
-
-      // DB update
       await updateTask(task.id, { assigned_to: value })
 
       if (value === 'Ortak') {
         if (!currentWs || currentWs.type !== 'personal') return
-
         const { ensureSharedWorkspace, moveTaskToWorkspace, supabase } = await import('../../lib/supabase')
         const { data: { user } } = await supabase.auth.getUser()
-
         if (!user) {
           toast.error("Lütfen oturum açın.")
           return
         }
-
         const targetName = `${currentWs.name} - Ortak`
         const sharedWorkspaces = store.workspaces.filter(w => w.type === 'shared')
         let targetWs = sharedWorkspaces.find(w => w.name === targetName)
-
-        // Eğer birebir isim eşleşen yoksa kullanıcıya seçenek sunalım
         if (!targetWs) {
           if (sharedWorkspaces.length > 0) {
-            const names = sharedWorkspaces.map(w => w.name).join(', ')
             const useExisting = window.confirm(
               `"${targetName}" adında bir ortak alan henüz yok.\n\n` +
-              `Mevcut ortak alanlardan birini mi kullanmak istersiniz? (${names})\n\n` +
-              `Yoksa bu göreve özel yeni bir "${targetName}" alanı oluşturulsun mu? (İptal = Yeni Oluştur)`
+              `Mevcut ortak alanlardan birini mi kullanmak istersiniz?\n\n` +
+              `Yoksa bu göreve özel yeni bir "${targetName}" alanı oluşturulsun mu?`
             )
-            if (useExisting) {
-              // Basitlik için ilkini seçiyoruz, ileride modal ile seçim yaptırılabilir
-              targetWs = sharedWorkspaces[0]
-            }
+            if (useExisting) targetWs = sharedWorkspaces[0]
           } else {
-            // Hiç ortak alan yoksa bile onaysız oluşturmayalım
             const createNew = window.confirm(
               `Görevi ortak bir alana taşımak üzeresiniz.\n\n` +
               `"${targetName}" isminde yeni bir ortak çalışma alanı oluşturulsun mu?`
             )
             if (!createNew) {
-              // İşlemi geri al (assigned_to'yu eski haline getir veya null yap)
               upsertTask({ ...task, assigned_to: null })
               await updateTask(task.id, { assigned_to: null })
               return
             }
           }
         }
-
-        // Seçilen veya oluşturulması gereken workspace'i kesinleştir
-        if (!targetWs) {
-          targetWs = await ensureSharedWorkspace(currentWs.id, user.id)
-        }
-
+        if (!targetWs) targetWs = await ensureSharedWorkspace(currentWs.id, user.id)
         if (!targetWs) throw new Error("Hedef çalışma alanı belirlenemedi.")
-
         await moveTaskToWorkspace(task.id, targetWs.id)
-
-        // UI'dan kaldır
         store.setTasks(store.tasks.filter(t => t.id !== task.id))
         toast.success(`"${task.title}" görevi “${targetWs.name}” alanına başarıyla taşındı.`)
       }
@@ -156,13 +155,9 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
   async function handleStatus(status: string) {
     const isDone = status === 'done';
     let newProgress = task.progress;
-
-    // 1. MANTIK HESAPLAMA: İlerleme barı ne olacak?
     if (isDone) {
-      // Eğer ana görev Done ise, ilerleme direkt %100'dür
       newProgress = 100;
     } else {
-      // Eğer Done'dan geri çekilirse (örn: Test), alt görevlere bakarak barı yeniden hesapla
       if (subtasks && subtasks.length > 0) {
         const doneCount = subtasks.filter(s => s.status === 'done').length;
         newProgress = Math.round((doneCount / subtasks.length) * 100);
@@ -170,31 +165,14 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
         newProgress = 0;
       }
     }
-
-    // 2. YEREL GÜNCELLEME (Hız için - Kullanıcı A anında görsün)
-    upsertTask({
-      ...task,
-      status: status as Task['status'],
-      progress: newProgress
-    });
-
-    // 3. VERİTABANI GÜNCELLEME (Kalıcı olması ve Kullanıcı B'nin ekranına düşmesi için)
-    await updateTask(task.id, {
-      status: status as Task['status'],
-      progress: newProgress
-    });
-
-    // 4. ALT GÖREVLERİN DOMİNO ETKİSİ
+    upsertTask({ ...task, status: status as Task['status'], progress: newProgress });
+    await updateTask(task.id, { status: status as Task['status'], progress: newProgress });
     if (isDone && subtasks.length > 0) {
-      // Local'deki tüm alt görevleri pıt pıt yeşil yap
       subtasks.forEach(sub => {
         upsertTask({ ...sub, status: 'done', progress: 100 });
       });
-      // DB'deki tüm alt görevleri topluca bitir
       await markSubtasksDone(task.id);
     }
-
-    // 5. EĞER BU BİR ALT GÖREVSE: Üstündeki ana görevin barını güncelle
     if (task.parent_id) {
       await recalculateProgress(task.parent_id);
     }
@@ -315,12 +293,23 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
   }
 
   return (
-    <>
-      <div className={cn(
+    <div ref={setNodeRef} style={style} {...attributes}>
+      <div 
+        ref={setDroppableRef}
+        className={cn(
         'flex items-stretch border-b border-[#1D1F2B] transition-colors group/row bg-[#0F111A] relative',
         'hover:bg-[#1D1F2B]',
-        expanded && 'bg-[#131520]'
+        expanded && 'bg-[#131520]',
+        isOver && 'ring-2 ring-blue-500 ring-inset bg-blue-500/10'
       )}>
+        {/* Drag Handle */}
+        <div 
+          {...listeners}
+          className="absolute left-[-20px] top-1/2 -translate-y-1/2 opacity-0 group-hover/row:opacity-100 cursor-grab active:cursor-grabbing p-1 text-gray-500 hover:text-blue-500 transition-opacity z-50"
+        >
+          <GripVertical size={16} />
+        </div>
+
         {/* Renk şeridi */}
         <div
           className="shrink-0 transition-opacity"
@@ -413,8 +402,6 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
                 {otherGroups.length === 0 && otherWorkspaces.length === 0 && (
                   <div className="px-3 py-2 text-[11px] text-gray-500 italic">Başka hedef bulunamadı.</div>
                 )}
-                
-                {/* Aynı çalışma alanındaki diğer gruplar */}
                 {otherGroups.map(g => (
                   <button
                     key={g.id}
@@ -424,7 +411,6 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
                     <span className="truncate pr-2">↳ {g.name}</span>
                   </button>
                 ))}
-
                 {otherWorkspaces.length > 0 && (
                   <>
                     <div className="px-2 py-1 mt-1 border-t border-gray-100/10 bg-[#1A1F36]">
@@ -459,7 +445,6 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
           )}
         </div>
 
-        {/* Dinamik sütunlar (title hariç) */}
         {visibleCols.filter((c) => c.id !== 'title').map((col) => (
           <div
             key={col.id}
@@ -480,18 +465,13 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
       </div>
 
       {expanded && (
-        <>
+        <SortableContext items={subtasks.map(s => s.id)} strategy={verticalListSortingStrategy}>
           {subtasks.map((sub, i) => (
             <SubTaskRow key={sub.id} task={sub} isLast={i === subtasks.length - 1 && !addingSubtask} />
           ))}
 
-          {/* Alt görev ekle alan çizgileri */}
-          <div
-            className="flex items-stretch border-b border-[#1D1F2B] bg-[#0F111A]"
-          >
-            {/* stripe */}
+          <div className="flex items-stretch border-b border-[#1D1F2B] bg-[#0F111A]">
             <div style={{ width: STRIPE_W, background: groupColor, opacity: 0.3 }} className="shrink-0" />
-            {/* connector */}
             <div className="relative shrink-0" style={{ width: CHECKBOX_W }}>
               <div className="absolute left-[50%] top-0 h-[50%] w-px bg-[#1D1F2B]" />
               <div className="absolute left-[50%] top-[50%] h-px bg-[#1D1F2B]" style={{ width: '50%' }} />
@@ -523,8 +503,8 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
               </button>
             )}
           </div>
-        </>
+        </SortableContext>
       )}
-    </>
+    </div>
   )
 }
