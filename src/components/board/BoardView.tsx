@@ -13,12 +13,10 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragStart,
-  DragOverEvent,
-  DragEndEvent,
+  type DragEndEvent,
+  type DragStartEvent,
 } from '@dnd-kit/core'
 import {
-  arrayMove,
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable'
 import { updateTasksOrder, recalculateProgress } from '../../lib/supabase'
@@ -74,7 +72,7 @@ export function BoardView() {
     return filteredTasks.filter((t) => t.group_id === groupId)
   }
 
-  const handleDragStart = (event: DragStart) => {
+  const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string)
   }
 
@@ -104,9 +102,6 @@ export function BoardView() {
       newParentId = null
     } else if (overTask) {
       newGroupId = overTask.group_id
-      // If dropping onto a task, should it become a subtask or just move next to it?
-      // Usually, dropping onto an item in a list means reordering.
-      // But if it's a different level, we might want to change parent.
       newParentId = overTask.parent_id
     }
 
@@ -117,7 +112,6 @@ export function BoardView() {
       t.group_id === newGroupId && t.parent_id === newParentId
     ).sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
 
-    const activeIndex = itemsInSameContext.findIndex(t => t.id === activeId)
     let overIndex = itemsInSameContext.findIndex(t => t.id === overId)
 
     if (overIndex === -1 && overGroup) overIndex = itemsInSameContext.length
