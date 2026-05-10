@@ -1,6 +1,6 @@
 import type { Task } from '../../types/db'
 import type { ColumnDef } from '../../lib/store'
-import { STRIPE_W, CHECKBOX_W } from './columns'
+import { STRIPE_W, CHECKBOX_W, GRIP_W } from './columns'
 import { STATUS_CONFIG } from '../cells/StatusCell'
 import { cn } from '../../lib/utils'
 
@@ -32,6 +32,8 @@ export function SummaryRow({ tasks, columns, groupColor }: Props) {
     >
       {/* Sol renkli şerit — header/row ile aynı */}
       <div style={{ width: STRIPE_W, background: `${groupColor}40` }} className="shrink-0 self-stretch" />
+      {/* Grip Handle placeholder — hizalama için */}
+      <div style={{ width: GRIP_W }} className="shrink-0" />
       {/* Checkbox placeholder */}
       <div style={{ width: CHECKBOX_W }} className="shrink-0" />
 
