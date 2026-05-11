@@ -182,14 +182,12 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
 
   const handlePaste = async (e: React.ClipboardEvent) => {
     const items = e.clipboardData.items
-    let imageFound = false
 
     for (let i = 0; i < items.length; i++) {
       if (items[i].type.indexOf('image') !== -1) {
         const file = items[i].getAsFile()
         if (!file) continue
 
-        imageFound = true
         try {
           setUploading(true)
           const url = await uploadCommentImage(file)
