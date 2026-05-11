@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { supabase, fetchTaskComments, insertTaskComment, uploadCommentImage, deleteTaskComment, deleteAllTaskComments } from '../../lib/supabase'
 import type { Task, TaskComment } from '../../types/db'
