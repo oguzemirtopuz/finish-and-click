@@ -180,6 +180,29 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
     }
   }
 
+  const handlePaste = async (e: React.ClipboardEvent) => {
+    const items = e.clipboardData.items
+    let imageFound = false
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const file = items[i].getAsFile()
+        if (!file) continue
+
+        imageFound = true
+        try {
+          setUploading(true)
+          const url = await uploadCommentImage(file)
+          await handleSend(url)
+        } catch (err: any) {
+          toast.error('Görsel yüklenemedi: ' + err.message)
+        } finally {
+          setUploading(false)
+        }
+      }
+    }
+  }
+
   const rootComments = comments.filter(c => !c.parent_id)
   const getReplies = (parentId: string) => comments.filter(c => c.parent_id === parentId)
 
@@ -364,7 +387,8 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
                 handleSend()
               }
             }}
-            placeholder="Yorumunuzu yazın veya görsel sürükleyin..."
+            onPaste={handlePaste}
+            placeholder="Yorumunuzu yazın, görsel sürükleyin veya yapıştırın..."
             className="w-full bg-transparent text-sm text-white placeholder:text-[#505363] outline-none resize-none min-h-[60px]"
           />
           
