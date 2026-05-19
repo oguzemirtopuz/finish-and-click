@@ -2,6 +2,7 @@ import { Bell, Inbox, Plus, LayoutGrid, Hash, Briefcase, Home } from 'lucide-rea
 import { useBoardStore } from '../../lib/store'
 import { supabase } from '../../lib/supabase'
 import { cn } from '../../lib/utils'
+import { toast } from 'sonner'
 
 export function Sidebar() {
   const { workspaces, activeWorkspaceId, setActiveWorkspace } = useBoardStore()
@@ -52,12 +53,47 @@ export function Sidebar() {
         {/* Top nav items */}
         <div style={{ marginBottom: 8 }}>
           {[
-            { icon: <Home size={18} />, label: 'Main Workspace' },
-            { icon: <Bell size={18} />, label: 'Notifications' },
-            { icon: <Inbox size={18} />, label: 'Inbox' },
-          ].map(({ icon, label }) => (
+            { 
+              icon: <Home size={18} />, 
+              label: 'Main Workspace',
+              onClick: () => {
+                if (workspaces && workspaces.length > 0) {
+                  setActiveWorkspace(workspaces[0].id)
+                  toast.success('Workspace Switched', {
+                    description: `Successfully loaded main workspace: ${workspaces[0].name}`,
+                    duration: 3000
+                  })
+                } else {
+                  toast.error('No Workspace Found', {
+                    description: 'Please create a workspace first.'
+                  })
+                }
+              }
+            },
+            { 
+              icon: <Bell size={18} />, 
+              label: 'Notifications',
+              onClick: () => {
+                toast.info('All Caught Up!', {
+                  description: 'Tebrikler! Okunmamış herhangi bir yeni bildiriminiz bulunmuyor.',
+                  duration: 4000
+                })
+              }
+            },
+            { 
+              icon: <Inbox size={18} />, 
+              label: 'Inbox',
+              onClick: () => {
+                toast.info('Inbox Cleared', {
+                  description: 'Gelen kutunuz tertemiz! Tüm görevler ve iş akışları güncel.',
+                  duration: 4000
+                })
+              }
+            },
+          ].map(({ icon, label, onClick }) => (
             <button
               key={label}
+              onClick={onClick}
               style={{ padding: '8px 12px', gap: 12, color: '#a9abcd', fontSize: 14, fontWeight: 500, width: '100%', display: 'flex', alignItems: 'center', borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', transition: 'all .2s', whiteSpace: 'nowrap' }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#323956'; (e.currentTarget as HTMLElement).style.color = '#fff' }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; (e.currentTarget as HTMLElement).style.color = '#a9abcd' }}
