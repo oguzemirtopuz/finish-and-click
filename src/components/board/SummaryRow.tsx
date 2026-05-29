@@ -20,7 +20,7 @@ export function SummaryRow({ tasks, columns, groupColor }: Props) {
     ? Math.round(root.reduce((s, t) => s + (t.rating ?? 0), 0) / root.filter((t) => t.rating).length * 10) / 10
     : null
 
-  // Status dağılımı
+  // Status distribution
   const statusMap: Record<string, number> = {}
   root.forEach((t) => { statusMap[t.status] = (statusMap[t.status] ?? 0) + 1 })
 
@@ -30,9 +30,9 @@ export function SummaryRow({ tasks, columns, groupColor }: Props) {
     <div
       className="flex items-stretch border-t border-[#1D1F2B] bg-[#0F111A] text-[11px] text-[#808191] font-medium rounded-b-md"
     >
-      {/* Sol renkli şerit — header/row ile aynı */}
+      {/* Left colored stripe — same as header/row */}
       <div style={{ width: STRIPE_W, background: `${groupColor}40` }} className="shrink-0 self-stretch" />
-      {/* Grip Handle placeholder — hizalama için */}
+      {/* Grip Handle placeholder — for alignment */}
       <div style={{ width: GRIP_W }} className="shrink-0" />
       {/* Checkbox placeholder */}
       <div style={{ width: CHECKBOX_W }} className="shrink-0" />
@@ -90,7 +90,7 @@ export function SummaryRow({ tasks, columns, groupColor }: Props) {
           content = (
             <span className="font-semibold text-gray-300 w-full text-center">
               {totalBudget > 0
-                ? new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(totalBudget)
+                ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(totalBudget)
                 : '—'}
             </span>
           )
@@ -118,7 +118,7 @@ export function SummaryRow({ tasks, columns, groupColor }: Props) {
         )
       })}
 
-      {/* Sağ simetri barı */}
+      {/* Right symmetry bar */}
       <div style={{ width: STRIPE_W }} className="shrink-0 bg-transparent" />
     </div>
   )

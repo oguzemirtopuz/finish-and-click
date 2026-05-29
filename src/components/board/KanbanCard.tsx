@@ -7,11 +7,11 @@ import type { Task, Profile } from '../../types/db'
 import { STATUS_CONFIG } from '../cells/StatusCell'
 import { deleteTask } from '../../lib/supabase'
 import { format, parseISO } from 'date-fns'
-import { tr } from 'date-fns/locale'
+import { enUS } from 'date-fns/locale'
 
 function fmt(d: string | null) {
   if (!d) return null
-  try { return format(parseISO(d), 'd MMM', { locale: tr }) } catch { return null }
+  try { return format(parseISO(d), 'd MMM', { locale: enUS }) } catch { return null }
 }
 
 interface Props {
@@ -42,13 +42,13 @@ export function KanbanCard({ task, overlay }: Props) {
         overlay && 'shadow-2xl ring-2 ring-blue-400'
       )}
     >
-      {/* Status şerit */}
+      {/* Status bar */}
       <div
         className="h-1 rounded-full mb-2.5 -mx-3 -mt-3 rounded-t-xl"
         style={{ background: statusCfg.bg }}
       />
 
-      {/* Başlık + Sil */}
+      {/* Title + Delete */}
       <div className="flex items-start justify-between gap-2 mb-2">
         <p 
           className="text-[13px] font-semibold text-white leading-snug flex-1"
@@ -60,7 +60,7 @@ export function KanbanCard({ task, overlay }: Props) {
         <button
           onClick={(e) => {
             e.stopPropagation()
-            if (window.confirm('Bu görevi silmek istediğinize emin misiniz?')) {
+            if (window.confirm('Are you sure you want to delete this task?')) {
               deleteTask(task.id)
             }
           }}
@@ -72,7 +72,7 @@ export function KanbanCard({ task, overlay }: Props) {
 
       {/* Meta */}
       <div className="flex items-center gap-2 flex-wrap">
-        {/* Tarih */}
+        {/* Date */}
         {(start || end) && (
           <div className="flex items-center gap-1 text-[11px] text-gray-400">
             <Calendar size={10} />
@@ -97,7 +97,7 @@ export function KanbanCard({ task, overlay }: Props) {
         )}
       </div>
 
-      {/* Alt satır: Avatar + Rating */}
+      {/* Bottom row: Avatar + Rating */}
       <div className="flex items-center justify-between mt-2.5">
         {(() => {
           const profile = useBoardStore.getState().members.find((m: Profile) => m.id === task.assigned_to)

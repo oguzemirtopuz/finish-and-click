@@ -16,19 +16,19 @@ export function useBoard() {
     setCommentCounts,
   } = useBoardStore()
 
-  // İlk yüklemede workspace listesini çek
+  // Fetch the workspace list on initial load
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
       fetchWorkspaces().then(async (ws) => {
         const store = useBoardStore.getState()
         if (ws.length === 0) {
-          const newWs = await insertWorkspace('Kişisel Çalışma Alanım', user.id)
+          const newWs = await insertWorkspace('My Personal Workspace', user.id)
           setWorkspaces([newWs])
           setActiveWorkspace(newWs.id)
         } else {
           setWorkspaces(ws)
-          // Eğer seçili alan yoksa veya artık geçerli değilse ilkini seç
+          // If no workspace is selected or the current one is no longer valid, select the first
           const currentValid = ws.some(w => w.id === store.activeWorkspaceId)
           if (!store.activeWorkspaceId || !currentValid) {
             setActiveWorkspace(ws[0].id)
@@ -36,12 +36,12 @@ export function useBoard() {
         }
       }).catch(err => {
         console.error("Workspace fetch error:", err)
-        toast.error("Çalışma alanları yüklenirken hata oluştu: " + err.message)
+        toast.error('Error loading workspaces: ' + err.message)
       })
     })
   }, [])
 
-  // Aktif workspace değiştiğinde grup, görev ve üyeleri yükle
+  // Reload groups, tasks, and members when the active workspace changes
   useEffect(() => {
     if (!activeWorkspaceId) return
     
@@ -63,7 +63,7 @@ export function useBoard() {
     const channel = supabase
       .channel('board-realtime', { config: { broadcast: { self: false } } })
 
-      // Görev değişiklikleri
+      // Task changes
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'tasks' },
@@ -74,7 +74,7 @@ export function useBoard() {
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             const incoming = payload.new as Task
             
-            // Eğer task artık bu workspace'e ait değilse (veya başından beri değilse) store'dan kaldır
+            // If the task no longer belongs to this workspace, remove it from the store
             if (!currentGroups.includes(incoming.group_id)) {
               if (store.tasks.some(t => t.id === incoming.id)) {
                 store.setTasks(store.tasks.filter(t => t.id !== incoming.id))
@@ -156,7 +156,7 @@ export function useBoard() {
           }
         }
       )
-      // Grubu da dinleyelim
+      // Also listen for group changes
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'task_groups' },
@@ -178,7 +178,7 @@ export function useBoard() {
         }
       )
 
-      // Workspace değişikliklerini de dinleyelim
+      // Also listen for workspace changes
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'workspaces' },
@@ -202,7 +202,7 @@ export function useBoard() {
         }
       )
       
-      // Üyelik değişikliklerini dinleyelim (Yeni davet gelirse veya başkası katılırsa)
+      // Listen for membership changes (new invite received or someone joins)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'workspace_members' },
@@ -214,19 +214,19 @@ export function useBoard() {
           const old = payload.old as any
           const currentWsId = useBoardStore.getState().activeWorkspaceId
           
-          // Eğer BANA bir üyelik geldiyse veya benden gittiyse -> Workspace listesini yenile
+          // If a membership was added/removed for ME -> refresh workspace list
           if (incoming?.user_id === user.id || old?.user_id === user.id) {
             fetchWorkspaces().then(ws => useBoardStore.getState().setWorkspaces(ws))
           }
           
-          // Eğer AKTİF workspace üyeleri değiştiyse (başkası katıldıysa) -> Üyeleri yenile
+          // If the ACTIVE workspace membership changed (someone else joined) -> refresh members
           if (incoming?.workspace_id === currentWsId || old?.workspace_id === currentWsId) {
             fetchWorkspaceMembers(currentWsId!).then(m => useBoardStore.getState().setMembers(m))
           }
         }
       )
       
-      // Global Yorum Dinleyici (ikon rengini anlık güncellemek için)
+      // Global comment listener (for real-time icon color updates)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'task_comments' },
@@ -252,7 +252,7 @@ export function useBoard() {
 
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('🔴 Realtime bağlandı')
+          console.log('🔴 Realtime connected')
         }
       })
 

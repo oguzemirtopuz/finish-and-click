@@ -8,9 +8,9 @@ export function Sidebar() {
   const { workspaces, activeWorkspaceId, setActiveWorkspace } = useBoardStore()
 
   async function handleCreateWorkspace() {
-    const name = window.prompt('Yeni çalışma alanının adını girin:')
+    const name = window.prompt('Enter the name of the new workspace:')
     if (!name?.trim()) return
-    const type = window.confirm('Bu bir ortak çalışma alanı mı olsun? (Tamam: Ortak, İptal: Kişisel)') ? 'shared' : 'personal'
+    const type = window.confirm('Should this be a shared workspace? (OK: Shared, Cancel: Personal)') ? 'shared' : 'personal'
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
@@ -21,7 +21,7 @@ export function Sidebar() {
       .select()
       .single()
 
-    if (error) { alert('Hata: ' + error.message); return }
+    if (error) { alert('Error: ' + error.message); return }
     if (data) {
       const newWs = data as any
       const store = useBoardStore.getState()
@@ -75,7 +75,7 @@ export function Sidebar() {
               label: 'Notifications',
               onClick: () => {
                 toast.info('All Caught Up!', {
-                  description: 'Tebrikler! Okunmamış herhangi bir yeni bildiriminiz bulunmuyor.',
+                  description: 'Congratulations! You have no new unread notifications.',
                   duration: 4000
                 })
               }
@@ -85,7 +85,7 @@ export function Sidebar() {
               label: 'Inbox',
               onClick: () => {
                 toast.info('Inbox Cleared', {
-                  description: 'Gelen kutunuz tertemiz! Tüm görevler ve iş akışları güncel.',
+                  description: 'Your inbox is clean! All tasks and workflows are up to date.',
                   duration: 4000
                 })
               }

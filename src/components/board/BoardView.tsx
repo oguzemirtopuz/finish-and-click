@@ -157,7 +157,7 @@ export function BoardView() {
       
     } catch (err: any) {
       setTasks(oldTasks)
-      toast.error('Sıralama güncellenirken hata oluştu')
+      toast.error('Error updating order')
     }
   }
 
@@ -178,8 +178,8 @@ export function BoardView() {
           {empty ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 256, color: '#6b7280' }}>
               <div style={{ fontSize: 48, marginBottom: 16 }}>📋</div>
-              <p style={{ fontSize: 16, fontWeight: 500, color: '#d1d5db', marginBottom: 4 }}>Henüz grup yok</p>
-              <p style={{ fontSize: 14, marginBottom: 12 }}>Toolbar'dan "New Group" ekle</p>
+              <p style={{ fontSize: 16, fontWeight: 500, color: '#d1d5db', marginBottom: 4 }}>No groups yet</p>
+              <p style={{ fontSize: 14, marginBottom: 12 }}>Add "New Group" from Toolbar</p>
             </div>
           ) : viewMode === 'kanban' ? (
             <KanbanView />

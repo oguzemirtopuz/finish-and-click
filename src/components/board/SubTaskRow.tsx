@@ -45,7 +45,7 @@ export function SubTaskRow({ task, isLast }: Props) {
   const allGroups = groups
 
   async function handleMoveToGroup(targetGroupId: string) {
-    if (!window.confirm('Alt görevi seçilen gruba taşımak istediğinize emin misiniz?')) return
+    if (!window.confirm('Are you sure you want to move the subtask to the selected group?')) return
     try {
       setIsMoving(true)
       const { moveTaskToGroup } = await import('../../lib/supabase')
@@ -61,9 +61,9 @@ export function SubTaskRow({ task, isLast }: Props) {
         const { recalculateProgress } = await import('../../lib/supabase')
         await recalculateProgress(task.parent_id)
       }
-      toast.success('Alt görev taşındı')
+      toast.success('Subtask moved')
     } catch (err: any) {
-      toast.error('Alt görev taşınırken hata: ' + err.message)
+      toast.error('Error moving subtask: ' + err.message)
     } finally {
       setIsMoving(false)
     }
@@ -71,7 +71,7 @@ export function SubTaskRow({ task, isLast }: Props) {
 
   async function handleMoveToWorkspace(targetWsId: string) {
     const ws = workspaces.find(w => w.id === targetWsId)
-    if (!window.confirm(`Alt görevi "${ws?.name}" alanına taşımak istediğinize emin misiniz?`)) return
+    if (!window.confirm(`Are you sure you want to move the subtask to workspace "${ws?.name}"?`)) return
     try {
       setIsMoving(true)
       const { moveTaskToWorkspace } = await import('../../lib/supabase')
@@ -83,16 +83,16 @@ export function SubTaskRow({ task, isLast }: Props) {
         const { recalculateProgress } = await import('../../lib/supabase')
         await recalculateProgress(task.parent_id)
       }
-      toast.success('Alt görev başka bir çalışma alanına taşındı')
+      toast.success('Subtask moved to another workspace')
     } catch (err: any) {
-      toast.error('Alt görev taşınırken hata: ' + err.message)
+      toast.error('Error moving subtask: ' + err.message)
     } finally {
       setIsMoving(false)
     }
   }
 
   async function handleMoveToParent(parentId: string) {
-    if (!window.confirm('Alt görevi seçilen görevin altına taşımak istediğinize emin misiniz?')) return
+    if (!window.confirm('Are you sure you want to move the subtask under the selected task?')) return
     try {
       setIsMoving(true)
       const oldParentId = task.parent_id
@@ -108,9 +108,9 @@ export function SubTaskRow({ task, isLast }: Props) {
       
       if (oldParentId) await recalculateProgress(oldParentId)
       await recalculateProgress(parentId)
-      toast.success('Alt görev başka bir göreve taşındı')
+      toast.success('Subtask moved to another task')
     } catch (err: any) {
-      toast.error('Alt görev taşınırken hata: ' + err.message)
+      toast.error('Error moving subtask: ' + err.message)
     } finally {
       setIsMoving(false)
     }
@@ -142,13 +142,13 @@ export function SubTaskRow({ task, isLast }: Props) {
   }
 
   async function handleDelete() {
-    if (!window.confirm('Bu alt görevi silmek istediğinize emin misiniz?')) return
+    if (!window.confirm('Are you sure you want to delete this subtask?')) return
     try {
       await deleteTask(task.id)
       if (task.parent_id) await recalculateProgress(task.parent_id)
-      toast.success('Alt görev silindi')
+      toast.success('Subtask deleted')
     } catch (err: any) {
-      toast.error('Alt görev silinirken hata oluştu: ' + err.message)
+      toast.error('Error deleting subtask: ' + err.message)
     }
   }
 
@@ -169,7 +169,7 @@ export function SubTaskRow({ task, isLast }: Props) {
           <GripVertical size={14} />
         </div>
 
-        {/* Sol bağlantı çizgisi + checkbox */}
+        {/* Left connector line + checkbox */}
         <div className="relative shrink-0" style={{ width: CHECKBOX_W }}>
           <div className="absolute left-[50%] top-0 w-px bg-[#1D1F2B]" style={{ height: isLast ? '50%' : '100%' }} />
           <div className="absolute left-[50%] top-[50%] h-px bg-[#1D1F2B]" style={{ width: '50%' }} />
@@ -207,7 +207,7 @@ export function SubTaskRow({ task, isLast }: Props) {
           <button
             onClick={handleDelete}
             className="shrink-0 text-gray-300 hover:text-red-500 opacity-0 group-hover/subtask:opacity-100 transition-all ml-auto"
-            title="Alt Görevi Sil"
+            title="Delete Subtask"
           >
             <Trash2 size={11} />
           </button>
@@ -220,7 +220,7 @@ export function SubTaskRow({ task, isLast }: Props) {
                   "shrink-0 ml-1 text-gray-400 hover:text-blue-400 opacity-0 group-hover/subtask:opacity-100 transition-all",
                   isMoving && "animate-pulse"
                 )}
-                title="Başka Gruba/Alana Taşı"
+                title="Move to Group/Workspace"
               >
                 <ExternalLink size={11} />
               </button>
@@ -229,11 +229,11 @@ export function SubTaskRow({ task, isLast }: Props) {
           >
             <div className="max-h-64 overflow-y-auto">
               <div className="p-2 border-b border-gray-100/10 bg-[#1A1F36]">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Hangi Gruba Taşınsın?</span>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Move to which group?</span>
               </div>
               <div className="py-1">
                 {allGroups.length === 0 && otherWorkspaces.length === 0 && (
-                  <div className="px-3 py-2 text-[11px] text-gray-500 italic">Başka hedef bulunamadı.</div>
+                  <div className="px-3 py-2 text-[11px] text-gray-500 italic">No other target found.</div>
                 )}
                 {allGroups.map(g => (
                   <button
@@ -245,9 +245,9 @@ export function SubTaskRow({ task, isLast }: Props) {
                   </button>
                 ))}
 
-                {/* Root Görevler (Parent olabilecekler) */}
+                {/* Root Tasks (Potential Parents) */}
                 <div className="px-2 py-1 mt-1 border-t border-gray-100/10 bg-[#1A1F36]">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Hangi Görevin Altına?</span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Under which task?</span>
                 </div>
                 {groups.map(g => {
                   const groupTasks = tasks.filter(t => t.group_id === g.id && !t.parent_id)
@@ -268,7 +268,7 @@ export function SubTaskRow({ task, isLast }: Props) {
                           )}
                         >
                           <span className="truncate">→ {gt.title}</span>
-                          {gt.id === task.parent_id && <span className="text-[8px] bg-blue-500/20 px-1 rounded">Mevcut</span>}
+                          {gt.id === task.parent_id && <span className="text-[8px] bg-blue-500/20 px-1 rounded">Current</span>}
                         </button>
                       ))}
                     </div>
@@ -278,7 +278,7 @@ export function SubTaskRow({ task, isLast }: Props) {
                 {otherWorkspaces.length > 0 && (
                   <>
                     <div className="px-2 py-1 mt-1 border-t border-gray-100/10 bg-[#1A1F36]">
-                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Diğer Alanlar</span>
+                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Other Workspaces</span>
                     </div>
                     {otherWorkspaces.map(ws => (
                       <button
@@ -288,7 +288,7 @@ export function SubTaskRow({ task, isLast }: Props) {
                       >
                         <span className="truncate pr-2">{ws.name}</span>
                         <span className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100/10 text-gray-400 font-medium shrink-0">
-                          {ws.type === 'personal' ? 'Kişisel' : 'Ortak'}
+                          {ws.type === 'personal' ? 'Personal' : 'Shared'}
                         </span>
                       </button>
                     ))}
@@ -335,7 +335,7 @@ export function SubTaskRow({ task, isLast }: Props) {
           )
         })}
 
-        {/* Sağ simetri barı */}
+        {/* Right symmetry bar */}
         <div style={{ width: STRIPE_W }} className="shrink-0 bg-transparent" />
       </div>
     </div>

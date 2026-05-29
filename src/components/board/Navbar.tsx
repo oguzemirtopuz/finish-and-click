@@ -13,7 +13,7 @@ export function Navbar() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      setUserEmail(data.user?.email || 'Bilinmiyor')
+      setUserEmail(data.user?.email || 'Unknown')
     })
   }, [])
 
@@ -22,9 +22,9 @@ export function Navbar() {
   }
 
   async function handleCreateWorkspace() {
-    const name = window.prompt('Yeni çalışma alanının adını girin:')
+    const name = window.prompt('Enter the name of the new workspace:')
     if (!name?.trim()) return
-    const type = window.confirm('Bu bir ortak çalışma alanı mı olsun? (Tamam: Ortak, İptal: Kişisel)') ? 'shared' : 'personal'
+    const type = window.confirm('Should this be a shared workspace? (OK: Shared, Cancel: Personal)') ? 'shared' : 'personal'
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
@@ -35,7 +35,7 @@ export function Navbar() {
       .select()
       .single()
 
-    if (error) { alert('Hata: ' + error.message); return }
+    if (error) { alert('Error: ' + error.message); return }
     if (data) {
       const newWs = data as any
       const store = useBoardStore.getState()
@@ -46,25 +46,25 @@ export function Navbar() {
 
   async function handleRenameWorkspace() {
     if (!activeWorkspace) return
-    const newName = window.prompt('Yeni adı girin:', activeWorkspace.name)
+    const newName = window.prompt('Enter new name:', activeWorkspace.name)
     if (!newName?.trim() || newName === activeWorkspace.name) return
     try {
       await updateWorkspace(activeWorkspace.id, { name: newName.trim() })
       const store = useBoardStore.getState()
       store.setWorkspaces(store.workspaces.map(w => w.id === activeWorkspace.id ? { ...w, name: newName.trim() } : w))
-    } catch (err: any) { alert('Hata: ' + err.message) }
+    } catch (err: any) { alert('Error: ' + err.message) }
   }
 
   async function handleDeleteWorkspace() {
     if (!activeWorkspace) return
-    if (!window.confirm(`"${activeWorkspace.name}" çalışma alanını silmek istiyor musunuz?`)) return
+    if (!window.confirm(`Are you sure you want to delete workspace "${activeWorkspace.name}"?`)) return
     try {
       await deleteWorkspace(activeWorkspace.id)
       const store = useBoardStore.getState()
       const remaining = store.workspaces.filter(w => w.id !== activeWorkspace.id)
       store.setWorkspaces(remaining)
       if (remaining.length > 0) setActiveWorkspace(remaining[0].id)
-    } catch (err: any) { alert('Hata: ' + err.message) }
+    } catch (err: any) { alert('Error: ' + err.message) }
   }
 
   return (
@@ -86,11 +86,11 @@ export function Navbar() {
                 <div style={{ padding: 4 }}>
                   <button onClick={handleRenameWorkspace} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', fontSize: 13, color: '#374151', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 4 }}
                     onMouseEnter={e => (e.currentTarget.style.background = '#f3f4f6')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>
-                    <Pencil size={13} /> Adını Değiştir
+                    <Pencil size={13} /> Rename
                   </button>
                   <button onClick={handleDeleteWorkspace} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', fontSize: 13, color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 4 }}
                     onMouseEnter={e => (e.currentTarget.style.background = '#fef2f2')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>
-                    <Trash2 size={13} /> Sil
+                    <Trash2 size={13} /> Delete
                   </button>
                 </div>
               </DropdownPortal>
@@ -128,12 +128,12 @@ export function Navbar() {
           >
             <div style={{ padding: 8 }}>
               <div style={{ padding: '8px', borderBottom: '1px solid #f3f4f6', marginBottom: 4 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#111827' }}>Hesabım</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#111827' }}>My Account</div>
                 <div style={{ fontSize: 12, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userEmail}</div>
               </div>
               <button onClick={handleSignOut} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '8px', fontSize: 13, color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 4 }}
                 onMouseEnter={e => (e.currentTarget.style.background = '#fef2f2')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>
-                <LogOut size={14} /> Çıkış Yap
+                <LogOut size={14} /> Log Out
               </button>
             </div>
           </DropdownPortal>

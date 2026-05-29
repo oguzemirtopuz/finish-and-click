@@ -9,8 +9,8 @@ interface Props {
 }
 
 /**
- * Dropdown içeriğini document.body'ye portal ile taşır.
- * Tablo overflow:hidden sorununu tamamen çözer.
+ * Renders dropdown content via a portal to document.body.
+ * Completely solves the overflow:hidden issue caused by table containers.
  */
 export function DropdownPortal({ trigger, children, width = 160, wrapperClassName = "cursor-pointer" }: Props) {
   const [open, setOpen] = useState(false)
@@ -37,7 +37,7 @@ export function DropdownPortal({ trigger, children, width = 160, wrapperClassNam
     })
   }
 
-  // Dışarı tıklanınca kapat
+  // Close when clicking outside
   useEffect(() => {
     if (!open) return
     function handleClick(e: MouseEvent) {

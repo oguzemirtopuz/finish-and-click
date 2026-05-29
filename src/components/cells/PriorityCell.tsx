@@ -3,10 +3,10 @@ import { DropdownPortal } from '../ui/DropdownPortal'
 type PriorityKey = 'low' | 'medium' | 'high' | 'critical'
 
 const PRIORITY_CONFIG: Record<PriorityKey, { label: string; color: string; bg: string }> = {
-  low:      { label: 'Düşük',    color: '#ffffff', bg: '#579bfc' },
-  medium:   { label: 'Orta',     color: '#ffffff', bg: '#a25ddc' },
-  high:     { label: 'Yüksek',   color: '#ffffff', bg: '#401694' },
-  critical: { label: 'Kritik',   color: '#ffffff', bg: '#333333' },
+  low:      { label: 'Low',    color: '#ffffff', bg: '#579bfc' },
+  medium:   { label: 'Medium',     color: '#ffffff', bg: '#a25ddc' },
+  high:     { label: 'High',   color: '#ffffff', bg: '#401694' },
+  critical: { label: 'Critical',   color: '#ffffff', bg: '#333333' },
 }
 
 const ORDER: PriorityKey[] = ['low', 'medium', 'high', 'critical']
@@ -32,7 +32,7 @@ export function PriorityCell({ value, onChange }: Props) {
   return (
     <DropdownPortal trigger={trigger} width={152} wrapperClassName="w-full h-full cursor-pointer">
       <div className="px-2 pb-1 pt-2">
-        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-1 mb-1">Öncelik Seç</p>
+        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-1 mb-1">Select Priority</p>
       </div>
       {ORDER.map((p) => {
         const c = PRIORITY_CONFIG[p]

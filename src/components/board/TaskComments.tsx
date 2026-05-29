@@ -25,14 +25,14 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const contentInputRef = useRef<HTMLTextAreaElement>(null)
 
-  // ESC ile lightbox kapat
+  // Close lightbox with ESC key
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setLightboxUrl(null) }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
   }, [])
 
-  // Store'a comment count bildir (ikon rengi için)
+  // Notify the store of the comment count (for icon coloring)
   useEffect(() => {
     setCommentCount(taskId, comments.length)
   }, [comments.length, taskId])
@@ -84,24 +84,24 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
   }, [])
 
   const handleDelete = async (commentId: string) => {
-    if (!window.confirm("Bu yorumu silmek istediğinize emin misiniz?")) return
+    if (!window.confirm('Are you sure you want to delete this comment?')) return
     try {
       await deleteTaskComment(commentId)
     } catch (err: any) {
-      toast.error('Yorum silinemedi: ' + err.message)
+      toast.error('Failed to delete comment: ' + err.message)
     }
   }
 
   const handleClearAll = async () => {
-    if (!window.confirm("Tüm yorumları ve notları kalıcı olarak silmek istediğinize emin misiniz?")) return
+    if (!window.confirm('Are you sure you want to permanently delete all comments and notes?')) return
     try {
       await deleteAllTaskComments(taskId)
       if (task.notes) {
         onClearLegacyNotes()
       }
-      toast.success("Tüm notlar temizlendi.")
+      toast.success('All notes cleared.')
     } catch (err: any) {
-      toast.error('Temizleme işlemi başarısız: ' + err.message)
+      toast.error('Clear operation failed: ' + err.message)
     }
   }
 
@@ -116,9 +116,9 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
         image_url: null
       })
       onClearLegacyNotes()
-      toast.success("Eski not yoruma dönüştürüldü.")
+      toast.success('Legacy note converted to a comment.')
     } catch (err: any) {
-      toast.error("Dönüştürme başarısız: " + err.message)
+      toast.error('Conversion failed: ' + err.message)
     }
   }
 
@@ -139,7 +139,7 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
       setContent('')
       setReplyTo(null)
     } catch (err: any) {
-      toast.error('Yorum gönderilemedi: ' + err.message)
+      toast.error('Failed to send comment: ' + err.message)
     }
   }
 
@@ -148,7 +148,7 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
     if (!file) return
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Dosya boyutu 5MB dan küçük olmalıdır.')
+      toast.error('File size must be less than 5 MB.')
       return
     }
 
@@ -157,7 +157,7 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
       const url = await uploadCommentImage(file)
       await handleSend(url)
     } catch (err: any) {
-      toast.error('Görsel yüklenemedi: ' + err.message)
+      toast.error('Failed to load image: ' + err.message)
     } finally {
       setUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -174,7 +174,7 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
       const url = await uploadCommentImage(file)
       await handleSend(url)
     } catch (err: any) {
-      toast.error('Görsel yüklenemedi: ' + err.message)
+      toast.error('Failed to load image: ' + err.message)
     } finally {
       setUploading(false)
     }
@@ -193,7 +193,7 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
           const url = await uploadCommentImage(file)
           await handleSend(url)
         } catch (err: any) {
-          toast.error('Görsel yüklenemedi: ' + err.message)
+          toast.error('Failed to load image: ' + err.message)
         } finally {
           setUploading(false)
         }
@@ -217,10 +217,10 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
           <div className="flex-1 bg-[#252836] p-3 rounded-xl border border-[#2D313E] relative">
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs font-semibold text-blue-400">
-                {comment.user_email?.split('@')[0] || 'Kullanıcı'}
+                {comment.user_email?.split('@')[0] || 'User'}
               </span>
               <span className="text-[10px] text-gray-500">
-                {new Date(comment.created_at).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+              {new Date(comment.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
             
@@ -234,7 +234,7 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
               <div className="mt-2 rounded-lg overflow-hidden border border-[#2D313E] inline-block">
                 <img
                   src={comment.image_url}
-                  alt="Eklenen görsel"
+                  alt="Added image"
                   className="max-w-full max-h-[200px] object-cover cursor-zoom-in hover:opacity-90 transition-opacity"
                   onClick={() => setLightboxUrl(comment.image_url!)}
                 />
@@ -250,7 +250,7 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
                 className="mt-2 flex items-center gap-1 text-[11px] font-medium text-gray-400 hover:text-blue-400 transition-colors"
               >
                 <CornerDownRight size={12} />
-                Yanıt Ver
+                Reply
               </button>
             )}
 
@@ -258,8 +258,8 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
               <button 
                 onClick={() => handleDelete(comment.id)}
                 className="absolute top-3 right-3 text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                title="Yorumu Sil"
-              >
+            title="Delete Comment"
+            >
                 <Trash2 size={13} />
               </button>
             )}
@@ -277,7 +277,7 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
 
   return (
     <>
-      {/* Lightbox — body'e portal ile render (overflow kısıtlamasından kaçmak için) */}
+      {/* Lightbox — rendered via portal to body to escape overflow constraints */}
       {lightboxUrl && createPortal(
         <div
           className="fixed inset-0 flex items-center justify-center bg-black/95 backdrop-blur-md"
@@ -287,13 +287,13 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
           <button
             className="absolute top-5 right-5 text-white bg-white/10 hover:bg-white/25 rounded-full p-2.5 transition-colors"
             onClick={() => setLightboxUrl(null)}
-            title="Kapat (ESC)"
+            title="Close (ESC)"
           >
             <X size={22} />
           </button>
           <img
             src={lightboxUrl}
-            alt="Tam ekran görsel"
+            alt="Full-size image"
             className="max-w-[95vw] max-h-[95vh] object-contain rounded-xl shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           />
@@ -305,14 +305,14 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-white font-semibold">
             <MessageSquare size={18} className="text-blue-400" />
-            <span>Yorumlar & Notlar</span>
+            <span>Comments & Notes</span>
           </div>
           <button
             onClick={handleClearAll}
             className="text-[11px] flex items-center gap-1 text-gray-400 hover:text-red-400 transition-colors bg-[#252836] px-2 py-1 rounded"
           >
             <Trash2 size={12} />
-            Tümünü Temizle
+            Clear All
           </button>
         </div>
 
@@ -327,7 +327,7 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-semibold text-blue-400 flex items-center gap-1">
                       <ArchiveRestore size={12} />
-                      Görev Açıklaması (Eski Not)
+                      Task Description (Old Note)
                     </span>
                   </div>
                   <p className="text-sm text-[#E4E4E6] whitespace-pre-wrap leading-relaxed">
@@ -337,7 +337,7 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
                     onClick={convertLegacyToComment}
                     className="mt-3 text-[11px] font-medium text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 px-2 py-1 rounded transition-colors"
                   >
-                    Yoruma Dönüştür
+                    Convert to Comment
                   </button>
                 </div>
               </div>
@@ -346,12 +346,12 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
 
           {loading ? (
             <div className="flex items-center justify-center h-32 text-gray-400">
-              <Loader2 className="animate-spin mr-2" size={18} /> Yükleniyor...
+              <Loader2 className="animate-spin mr-2" size={18} /> Loading...
             </div>
           ) : rootComments.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-32 text-gray-500 text-sm">
               <MessageSquare size={24} className="mb-2 opacity-50" />
-              Henüz yorum yapılmamış
+              No comments yet
             </div>
           ) : (
             rootComments.map(c => renderComment(c))
@@ -367,7 +367,7 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
             <div className="flex items-center justify-between bg-[#1D1F2B] px-3 py-1.5 rounded-md mb-2">
               <span className="text-xs text-gray-400 flex items-center gap-1">
                 <CornerDownRight size={12} />
-                <span className="text-blue-400 font-medium">{replyTo.user_email?.split('@')[0]}</span> kişisine yanıt veriliyor
+                <span className="text-blue-400 font-medium">{replyTo.user_email?.split('@')[0]}</span> replying to
               </span>
               <button onClick={() => setReplyTo(null)} className="text-gray-500 hover:text-white">
                 <X size={14} />
@@ -386,7 +386,7 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
               }
             }}
             onPaste={handlePaste}
-            placeholder="Yorumunuzu yazın, görsel sürükleyin veya yapıştırın..."
+            placeholder="Type your comment, drag or paste an image..."
             className="w-full bg-transparent text-sm text-white placeholder:text-[#505363] outline-none resize-none min-h-[60px]"
           />
           
@@ -403,11 +403,11 @@ export function TaskComments({ task, onClearLegacyNotes }: Props) {
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
                 className="p-1.5 text-gray-400 hover:text-white hover:bg-[#323956] rounded-md transition-colors disabled:opacity-50"
-                title="Görsel Ekle"
+                title="Add Image"
               >
                 {uploading ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} />}
               </button>
-              <span className="text-[10px] text-gray-500 hidden sm:inline-block">veya sürükleyip bırakın</span>
+              <span className="text-[10px] text-gray-500 hidden sm:inline-block">or drag and drop</span>
             </div>
           
             <button 

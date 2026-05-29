@@ -1,5 +1,5 @@
 // ============================================================
-// Veritabanı Tip Tanımları — Supabase tablolarını yansıtır
+// Database Type Definitions — Mirrors Supabase tables
 // ============================================================
 
 export type TaskStatus =
@@ -36,7 +36,7 @@ export interface Task {
   parent_id: string | null
   title: string
   status: TaskStatus
-  priority: TaskPriority       // zorunlu sütun
+  priority: TaskPriority       // required column
   assigned_to: string | null
   start_date: string | null
   end_date: string | null
@@ -75,7 +75,7 @@ export interface TaskComment {
   user_email?: string // joined property for UI
 }
 
-// Uygulama içi kullanım için zenginleştirilmiş tipler
+// Enriched types for in-app use
 export interface TaskWithSubtasks extends Task {
   subtasks: Task[]
 }

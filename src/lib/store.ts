@@ -9,19 +9,19 @@ export interface ColumnDef {
   label: string
   width: number
   visible: boolean
-  fixed?: boolean   // silinemez / gizlenemez
+  fixed?: boolean   // cannot be deleted or hidden
 }
 
 const DEFAULT_COLUMNS: ColumnDef[] = [
-  { id: 'title',         label: 'Görev Adı',       width: 400, visible: true,  fixed: true },
-  { id: 'status',        label: 'Durum',            width: 180, visible: true,  fixed: true },
-  { id: 'assignee',      label: 'Sorumlu',          width: 140, visible: true  },
-  { id: 'timeline',      label: 'Zaman Çizelgesi',  width: 250, visible: true  },
-  { id: 'priority',      label: 'Öncelik',          width: 160, visible: true  },
-  { id: 'progress',      label: 'İlerleme',         width: 180, visible: false },
-  { id: 'rating',        label: 'Puan',             width: 130, visible: false },
-  { id: 'budget',        label: 'Bütçe',            width: 120, visible: false },
-  { id: 'notes',         label: 'Notlar',           width: 200, visible: false },
+  { id: 'title',         label: 'Task Name',   width: 400, visible: true,  fixed: true },
+  { id: 'status',        label: 'Status',      width: 180, visible: true,  fixed: true },
+  { id: 'assignee',      label: 'Assignee',    width: 140, visible: true  },
+  { id: 'timeline',      label: 'Timeline',    width: 250, visible: true  },
+  { id: 'priority',      label: 'Priority',    width: 160, visible: true  },
+  { id: 'progress',      label: 'Progress',    width: 180, visible: false },
+  { id: 'rating',        label: 'Rating',      width: 130, visible: false },
+  { id: 'budget',        label: 'Budget',      width: 120, visible: false },
+  { id: 'notes',         label: 'Notes',       width: 200, visible: false },
 ]
 
 interface BoardStore {

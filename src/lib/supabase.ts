@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import type { Workspace, TaskGroup, Task, ActivityLog, TaskComment, Profile } from '../types/db'
 
 // ============================================================
-// Supabase İstemcisi
+// Supabase Client
 // ============================================================
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -10,10 +10,10 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 // ============================================================
-// Veri Çekme Fonksiyonları
+// Data Fetching Functions
 // ============================================================
 
-/** Tüm workspace'leri getir */
+/** Fetch all workspaces */
 export async function fetchWorkspaces(): Promise<Workspace[]> {
   const { data, error } = await supabase
     .from('workspaces')
@@ -23,7 +23,7 @@ export async function fetchWorkspaces(): Promise<Workspace[]> {
   return data ?? []
 }
 
-/** Çalışma alanını güncelle */
+/** Update a workspace */
 export async function updateWorkspace(
   id: string,
   updates: Partial<Omit<Workspace, 'id' | 'created_at'>>
@@ -35,7 +35,7 @@ export async function updateWorkspace(
   if (error) throw error
 }
 
-/** Çalışma alanını sil */
+/** Delete a workspace */
 export async function deleteWorkspace(id: string): Promise<void> {
   const { error } = await supabase
     .from('workspaces')
@@ -44,7 +44,7 @@ export async function deleteWorkspace(id: string): Promise<void> {
   if (error) throw error
 }
 
-/** Yeni çalışma alanı ekle */
+/** Insert a new workspace */
 export async function insertWorkspace(name: string, owner_id: string): Promise<Workspace> {
   const { data, error } = await supabase
     .from('workspaces')
@@ -57,7 +57,7 @@ export async function insertWorkspace(name: string, owner_id: string): Promise<W
   return data as Workspace
 }
 
-/** Workspace'e ait tüm grupları getir */
+/** Fetch all groups belonging to a workspace */
 export async function fetchGroups(workspaceId: string): Promise<TaskGroup[]> {
   const { data, error } = await supabase
     .from('task_groups')
@@ -68,7 +68,7 @@ export async function fetchGroups(workspaceId: string): Promise<TaskGroup[]> {
   return data ?? []
 }
 
-/** Grubu sil */
+/** Delete a group */
 export async function deleteGroup(id: string): Promise<void> {
   const { error } = await supabase
     .from('task_groups')
@@ -77,7 +77,7 @@ export async function deleteGroup(id: string): Promise<void> {
   if (error) throw error
 }
 
-/** Grubu güncelle */
+/** Update a group */
 export async function updateGroup(
   id: string,
   updates: Partial<Omit<TaskGroup, 'id' | 'created_at'>>
@@ -89,7 +89,7 @@ export async function updateGroup(
   if (error) throw error
 }
 
-/** Workspace'e ait tüm görevleri getir (alt görevler dahil) */
+/** Fetch all tasks belonging to a workspace (including subtasks) */
 export async function fetchTasks(workspaceId: string): Promise<Task[]> {
   const { data, error } = await supabase
     .from('tasks')
@@ -103,7 +103,7 @@ export async function fetchTasks(workspaceId: string): Promise<Task[]> {
   return (data ?? []) as Task[]
 }
 
-/** Tek bir görevi güncelle */
+/** Update a single task */
 export async function updateTask(
   taskId: string,
   updates: Partial<Omit<Task, 'id' | 'created_at'>>
@@ -115,7 +115,7 @@ export async function updateTask(
   if (error) throw error
 }
 
-/** Görevi sil */
+/** Delete a task */
 export async function deleteTask(id: string): Promise<void> {
   const { error } = await supabase
     .from('tasks')
@@ -124,7 +124,7 @@ export async function deleteTask(id: string): Promise<void> {
   if (error) throw error
 }
 
-/** Yeni görev ekle */
+/** Insert a new task */
 export async function insertTask(
   task: Omit<Task, 'id' | 'created_at'>
 ): Promise<Task> {
@@ -137,7 +137,7 @@ export async function insertTask(
   return data as Task
 }
 
-/** Yeni grup ekle */
+/** Insert a new group */
 export async function insertGroup(
   group: Omit<TaskGroup, 'id' | 'created_at'>
 ): Promise<TaskGroup> {
@@ -152,22 +152,22 @@ export async function insertGroup(
   return data as TaskGroup
 }
 
-/** Activity log kaydı ekle */
+/** Insert an activity log entry */
 export async function logActivity(
   entry: Omit<ActivityLog, 'id' | 'created_at'>
 ): Promise<void> {
   await supabase.from('activity_log').insert(entry)
 }
 
-/** 
- * Kişisel bir alan için karşılık gelen Ortak alanı bulur veya oluşturur.
- * İsim şablonu: "[Kişisel Alan Adı] - Ortak"
+/**
+ * Finds or creates the corresponding Shared workspace for a Personal workspace.
+ * Name template: "[Personal Workspace Name] - Shared"
  */
 export async function ensureSharedWorkspace(personalWsId: string, userId: string): Promise<Workspace> {
   const { data: personalWs } = await supabase.from('workspaces').select('name').eq('id', personalWsId).single()
-  const targetName = `${personalWs?.name || 'Kişisel'} - Ortak`
+  const targetName = `${personalWs?.name || 'Personal'} - Shared`
 
-  // Önce bu isimde ve tipte bir alan var mı bak
+  // Check if a workspace with this name and type already exists
   const { data: existing } = await supabase
     .from('workspaces')
     .select('*')
@@ -177,7 +177,7 @@ export async function ensureSharedWorkspace(personalWsId: string, userId: string
 
   if (existing) return existing as Workspace
 
-  // Yoksa oluştur
+  // If not found, create a new one
   const { data: newWs, error } = await supabase
     .from('workspaces')
     .insert({ name: targetName, type: 'shared', owner_id: userId })
@@ -188,9 +188,9 @@ export async function ensureSharedWorkspace(personalWsId: string, userId: string
   return newWs as Workspace
 }
 
-/** Görevi (ve gerekiyorsa grubunu) başka bir workspace'e taşır */
+/** Moves a task (and its group if necessary) to another workspace */
 export async function moveTaskToWorkspace(taskId: string, targetWsId: string): Promise<void> {
-  // 1. Görevin şu anki bilgilerini al
+  // 1. Retrieve the current task details
   const { data: task, error: tErr } = await supabase
     .from('tasks')
     .select('*, task_groups(name)')
@@ -201,7 +201,7 @@ export async function moveTaskToWorkspace(taskId: string, targetWsId: string): P
 
   const groupName = (task.task_groups as any).name
 
-  // 2. Hedef workspace'de aynı isimde grup var mı bak
+  // 2. Check if a group with the same name exists in the target workspace
   let { data: targetGroup } = await supabase
     .from('task_groups')
     .select('id')
@@ -209,7 +209,7 @@ export async function moveTaskToWorkspace(taskId: string, targetWsId: string): P
     .eq('name', groupName)
     .maybeSingle()
 
-  // 3. Yoksa hedefte yeni grup oluştur
+  // 3. If not, create a new group in the target workspace
   if (!targetGroup) {
     const { data: newGroup, error: gErr } = await supabase
       .from('task_groups')
@@ -225,10 +225,10 @@ export async function moveTaskToWorkspace(taskId: string, targetWsId: string): P
     targetGroup = newGroup
   }
 
-  // 4. Görevi ve tüm alt görevlerini hedef gruba taşı (or condition isn't ideal for update with single eq)
-  if (!targetGroup) throw new Error('Hedef grup oluşturulamadı')
+  // 4. Move the task and all its subtasks to the target group
+  if (!targetGroup) throw new Error('Target group could not be created')
 
-  // Ana görev (alt görevse root görev olur)
+  // Main task (if it was a subtask, it becomes a root task)
   const { error: moveErr } = await supabase
     .from('tasks')
     .update({ group_id: targetGroup.id, parent_id: null })
@@ -236,13 +236,13 @@ export async function moveTaskToWorkspace(taskId: string, targetWsId: string): P
 
   if (moveErr) throw moveErr
 
-  // Alt görevler
+  // Subtasks
   await supabase
     .from('tasks')
     .update({ group_id: targetGroup.id })
     .eq('parent_id', taskId)
 
-  // 5. Log kaydı
+  // 5. Log the activity
   await logActivity({
     task_id: taskId,
     user_id: null,
@@ -252,7 +252,7 @@ export async function moveTaskToWorkspace(taskId: string, targetWsId: string): P
   })
 }
 
-/** Görevi (ve alt görevlerini) aynı veya başka bir gruba taşır. Alt görevse root görev yapar. */
+/** Moves a task (and its subtasks) to the same or a different group. If it is a subtask, it becomes a root task. */
 export async function moveTaskToGroup(taskId: string, targetGroupId: string): Promise<void> {
   const { error } = await supabase
     .from('tasks')
@@ -261,23 +261,23 @@ export async function moveTaskToGroup(taskId: string, targetGroupId: string): Pr
 
   if (error) throw error
 
-  // Varsa alt görevleri de yeni gruba geçir
+  // Also move any subtasks to the new group
   await supabase
     .from('tasks')
     .update({ group_id: targetGroupId })
     .eq('parent_id', taskId)
 }
 
-/** Görevi başka bir ana görevin altına subtask olarak taşır. */
+/** Moves a task as a subtask under another parent task. */
 export async function moveTaskToParent(taskId: string, parentId: string): Promise<void> {
-  // Önce parent görevin grubunu bulalım ki görev o gruba geçsin
+  // First find the parent task's group so the task is moved to the correct group
   const { data: parent } = await supabase
     .from('tasks')
     .select('group_id')
     .eq('id', parentId)
     .single()
 
-  if (!parent) throw new Error('Hedef ana görev bulunamadı')
+  if (!parent) throw new Error('Target parent task not found')
 
   const { error } = await supabase
     .from('tasks')
@@ -289,14 +289,14 @@ export async function moveTaskToParent(taskId: string, parentId: string): Promis
 
   if (error) throw error
 
-  // Varsa alt görevleri de yeni gruba geçir
+  // Also move any subtasks to the new group
   await supabase
     .from('tasks')
     .update({ group_id: parent.group_id })
     .eq('parent_id', taskId)
 }
 
-/** Birden fazla görevin sırasını ve konumunu günceller */
+/** Updates the order and position of multiple tasks */
 export async function updateTasksOrder(updates: { id: string, order: number, group_id?: string, parent_id?: string | null }[]): Promise<void> {
   // Supabase upsert performs a merge if we only provide id and the fields to change, 
   // but it's safer to use individual updates or a single call if we know the schema.
@@ -312,9 +312,9 @@ export async function updateTasksOrder(updates: { id: string, order: number, gro
 }
 
 
-/** Ana görevin progress'ini alt görevlere göre yeniden hesapla */
+/** Recalculates the progress of a parent task based on its subtasks */
 export async function recalculateProgress(parentId: string): Promise<void> {
-  // Önce parent'ın kendi durumunu kontrol et
+  // First check the parent task's own status
   const { data: parentTask } = await supabase.from('tasks').select('status, progress').eq('id', parentId).single()
 
   if (parentTask?.status === 'done') {
@@ -340,9 +340,9 @@ export async function recalculateProgress(parentId: string): Promise<void> {
   }
 }
 
-/** Workspace üyelerini (Profil + Manuel Kişiler) getir */
+/** Fetch workspace members (Profiles + manually added contacts) */
 export async function fetchWorkspaceMembers(workspaceId: string): Promise<Profile[]> {
-  // 1. Gerçek profilleri çek (workspace_members üzerinden)
+  // 1. Fetch real profiles (via workspace_members)
   const { data: members, error: memberErr } = await supabase
     .from('workspace_members')
     .select(`
@@ -356,14 +356,14 @@ export async function fetchWorkspaceMembers(workspaceId: string): Promise<Profil
 
   if (memberErr) console.error("Member fetch error:", memberErr)
 
-  // 2. Manuel eklenen kişileri çek (workspace_contacts tablosundan)
+  // 2. Fetch manually added contacts (from workspace_contacts table)
   const { data: contacts, error: contactErr } = await supabase
     .from('workspace_contacts')
     .select('id, full_name, email')
     .eq('workspace_id', workspaceId)
 
   if (contactErr) {
-    // Tablo henüz yoksa hata vermesin, boş dönsün
+    // If the table doesn't exist yet, fail silently and return empty
     console.warn("Contacts fetch error (table might not exist yet):", contactErr.message)
   }
 
@@ -377,9 +377,9 @@ export async function fetchWorkspaceMembers(workspaceId: string): Promise<Profil
   return [...profileList, ...contactList]
 }
 
-/** Manuel sorumlu ekle
- * 
- * DB Requirement (Supabase'de bir kez çalıştır):
+/** Add a manual assignee contact
+ *
+ * DB Requirement (run once in Supabase):
  * ─────────────────────────────────────────────
  * CREATE TABLE IF NOT EXISTS workspace_contacts (
  *   id        UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -388,7 +388,7 @@ export async function fetchWorkspaceMembers(workspaceId: string): Promise<Profil
  *   email     TEXT,
  *   created_at TIMESTAMPTZ DEFAULT NOW()
  * );
- * -- Eğer tasks.assigned_to FK kısıtlaması varsa kaldır:
+ * -- If a FK constraint exists on tasks.assigned_to, remove it:
  * ALTER TABLE tasks DROP CONSTRAINT IF EXISTS tasks_assigned_to_fkey;
  */
 export async function insertWorkspaceContact(workspaceId: string, fullName: string): Promise<Profile> {
@@ -413,16 +413,16 @@ export async function insertWorkspaceContact(workspaceId: string, fullName: stri
   }
 }
 
-/** Grubu tüm görevleriyle birlikte başka bir workspace'e taşı */
+/** Move a group along with all its tasks to another workspace */
 export async function moveGroupToWorkspace(groupId: string, targetWsId: string) {
-  // 1. Hedef workspace tipini bul (shared ise assignee 'Ortak' olacak)
+  // 1. Get the target workspace type (if shared, assignee will be reset)
   const { data: ws } = await supabase
     .from('workspaces')
     .select('type')
     .eq('id', targetWsId)
     .single()
 
-  // 2. Grubu güncelle
+  // 2. Update the group
   const { error: groupErr } = await supabase
     .from('task_groups')
     .update({ workspace_id: targetWsId })
@@ -430,7 +430,7 @@ export async function moveGroupToWorkspace(groupId: string, targetWsId: string) 
 
   if (groupErr) throw groupErr
 
-  // 3. Eğer hedef shared ise, o gruptaki TÜM görevlerin assignee'sini 'Ortak' yap (bir kereye mahsus)
+  // 3. If the target is shared, reset the assignee for all tasks in the group
   if (ws?.type === 'shared') {
     const { error: taskErr } = await supabase
       .from('tasks')
@@ -442,7 +442,7 @@ export async function moveGroupToWorkspace(groupId: string, targetWsId: string) 
 }
 
 // ============================================================
-// Yorumlar (Comments) & Görseller
+// Comments & Attachments
 // ============================================================
 
 export async function fetchWorkspaceCommentCounts(workspaceId: string): Promise<Record<string, number>> {

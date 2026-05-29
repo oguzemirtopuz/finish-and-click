@@ -45,9 +45,9 @@ export function AssigneeCell({ value, onChange }: Props) {
         availableMembers.push({ id: currentUserId, email: currentUserEmail, full_name: null })
     }
 
-    const ORTAK_ID = 'Ortak'
+    const ORTAK_ID = 'Shared'
     if (currentWs?.type === 'personal' && !availableMembers.some((m) => m.id === ORTAK_ID)) {
-        availableMembers.unshift({ id: ORTAK_ID, email: 'ortak@workspace.internal', full_name: 'Ortak' })
+        availableMembers.unshift({ id: ORTAK_ID, email: 'shared@workspace.internal', full_name: 'Shared' })
     }
 
     const filtered = availableMembers.filter((m) =>
@@ -83,7 +83,7 @@ export function AssigneeCell({ value, onChange }: Props) {
                     autoFocus
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="İsim ara..."
+                    placeholder="Search name..."
                     className="w-full text-xs border border-gray-200 rounded-md px-2 py-1 outline-none"
                     onClick={(e) => e.stopPropagation()}
                 />
@@ -93,7 +93,7 @@ export function AssigneeCell({ value, onChange }: Props) {
                     onMouseDown={(e) => { e.preventDefault(); onChange(null) }}
                     className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-500 hover:bg-red-50"
                 >
-                    Görevi kaldır
+                    Remove assignee
                 </button>
             )}
 

@@ -79,9 +79,9 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
       useBoardStore.getState().upsertTask(t)
       setNewTitle('')
       setAdding(false)
-      toast.success('Görev eklendi')
+      toast.success('Task added')
     } catch (err: any) {
-      toast.error(err.message || 'Görev eklenirken bir hata oluştu')
+      toast.error(err.message || 'Error adding task')
     }
   }
 
@@ -96,12 +96,12 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
   }
 
   async function handleDelete() {
-    if (!window.confirm(`"${group.name}" grubunu ve içindeki tüm görevleri silmek istediğinize emin misiniz?`)) return
+    if (!window.confirm(`Are you sure you want to delete group "${group.name}" and all its tasks?`)) return
     try {
       await deleteGroup(group.id)
-      toast.success('Grup başarıyla silindi')
+      toast.success('Group deleted successfully')
     } catch (err: any) {
-      toast.error('Grup silinirken hata oluştu: ' + err.message)
+      toast.error('Error deleting group: ' + err.message)
     }
   }
 
@@ -109,7 +109,7 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
     const target = workspaces.find(w => w.id === targetId)
     if (!target) return
 
-    if (!window.confirm(`"${group.name}" grubunu "${target.name}" alanına taşımak istediğinize emin misiniz?`)) return
+    if (!window.confirm(`Are you sure you want to move group "${group.name}" to workspace "${target.name}"?`)) return
 
     try {
       setIsMoving(true)
@@ -118,13 +118,13 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
       const store = useBoardStore.getState()
       store.setGroups(store.groups.filter(g => g.id !== group.id))
 
-      if (window.confirm(`Grup taşındı! "${target.name}" alanına gitmek ister misiniz?`)) {
+      if (window.confirm(`Group moved! Do you want to go to workspace "${target.name}"?`)) {
         setActiveWorkspace(targetId)
       }
-      toast.success('Grup başarıyla taşındı')
+      toast.success('Group moved successfully')
     } catch (err: any) {
       console.error("Move group failed:", err)
-      toast.error(err.message || "Grup taşınırken bir hata oluştu.")
+      toast.error(err.message || "Error moving group.")
     } finally {
       setIsMoving(false)
     }
@@ -138,7 +138,7 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
         isOver && "bg-blue-500/10 ring-2 ring-blue-500/50"
       )}
     >
-      {/* Grup başlığı */}
+      {/* Group header */}
       <div className="flex items-center gap-2 mb-2 px-1 group overflow-hidden">
         <button
           onClick={() => toggleCollapse(group.id)}
@@ -181,12 +181,12 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
         <button
           onClick={handleDelete}
           className="ml-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-          title="Grubu Sil"
+          title="Delete Group"
         >
           <Trash2 size={13} />
         </button>
 
-        {/* Taşıma Butonu */}
+        {/* Move Button */}
         <DropdownPortal
           trigger={
             <button
@@ -195,7 +195,7 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
                 "ml-1 p-1 text-gray-500 hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity rounded-md hover:bg-[#20263c] shrink-0",
                 isMoving && "animate-pulse"
               )}
-              title="Başka Alanına Taşı"
+              title="Move to another workspace"
             >
               <ExternalLink size={13} />
             </button>
@@ -203,11 +203,11 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
           width={220}
         >
           <div className="p-2 border-b border-gray-100 bg-gray-50/50">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Hangi Alana Taşınsın?</span>
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Move to which workspace?</span>
           </div>
           <div className="py-1">
             {otherWorkspaces.length === 0 ? (
-              <div className="px-3 py-2 text-[11px] text-gray-400 italic">Başka çalışma alanı bulunamadı.</div>
+              <div className="px-3 py-2 text-[11px] text-gray-400 italic">No other workspaces found.</div>
             ) : (
               otherWorkspaces.map(ws => (
                 <button
@@ -217,7 +217,7 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
                 >
                   <span className="truncate pr-2">{ws.name}</span>
                   <span className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-400 font-medium">
-                    {ws.type === 'personal' ? 'Kişisel' : 'Ortak'}
+                    {ws.type === 'personal' ? 'Personal' : 'Shared'}
                   </span>
                 </button>
               ))
@@ -235,13 +235,13 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
       {!collapsed && (
         <div className="w-fit inline-flex flex-col rounded-md ring-1 ring-[#1D1F2B] overflow-visible shadow-[0_4px_20px_rgba(0,0,0,0.2)] bg-[#0F111A] mb-2">
 
-          {/* Sütun başlıkları */}
+          {/* Column headers */}
           <div
             className="flex items-stretch text-[11px] font-bold text-[#808191] uppercase tracking-wider
                        border-b border-[#1D1F2B] bg-[#1D1F2B] rounded-t-md select-none group/header hover:bg-[#242636] transition-colors
                        sticky top-0 z-30 shadow-sm"
           >
-            {/* Sol renkli şerit — rows ile aynı yaklaşım */}
+            {/* Left colored stripe — same approach as rows */}
             <div style={{ width: STRIPE_W, background: group.color }} className="shrink-0 self-stretch rounded-tl-md" />
             <div style={{ width: GRIP_W }} className="shrink-0" />
             <div style={{ width: CHECKBOX_W }} className="shrink-0" />
@@ -268,15 +268,15 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
                 </div>
               </div>
             ))}
-            {/* Sağ simetri barı */}
+            {/* Right symmetry bar */}
             <div style={{ width: STRIPE_W }} className="shrink-0 bg-transparent border-b border-[#1D1F2B]" />
           </div>
 
           <SortableContext items={rootTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-            {/* Görev satırları */}
+            {/* Task rows */}
             {rootTasks.length === 0 && (
               <div className="py-8 text-center text-xs text-gray-400">
-                Bu grupta henüz görev yok
+                No tasks in this group yet
               </div>
             )}
             {rootTasks.map((task) => (
@@ -290,15 +290,15 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
             ))}
           </SortableContext>
 
-          {/* Özet satırı */}
+          {/* Summary row */}
           <SummaryRow tasks={tasks} columns={columns} groupColor={group.color} />
 
-          {/* + Görev ekle */}
+          {/* + Add task */}
           <div className="border-t border-[#1D1F2B] rounded-b-md overflow-hidden bg-[#0F111A] flex items-stretch">
-            {/* Sol renkli şerit — rows/header ile aynı genişlik */}
+            {/* Left colored stripe — same width as rows/header */}
             <div style={{ width: STRIPE_W, background: `${group.color}30` }} className="shrink-0 self-stretch" />
             <div style={{ width: GRIP_W }} className="shrink-0" />
-            {/* Checkbox spacer — hizalama için */}
+            {/* Checkbox spacer — for alignment */}
             <div style={{ width: CHECKBOX_W }} className="shrink-0" />
             
             {adding ? (

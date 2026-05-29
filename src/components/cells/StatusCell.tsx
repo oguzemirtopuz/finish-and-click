@@ -3,12 +3,12 @@ import { DropdownPortal } from '../ui/DropdownPortal'
 type StatusKey = 'todo' | 'in_progress' | 'test' | 'done' | 'stuck' | 'waiting'
 
 export const STATUS_CONFIG: Record<StatusKey, { label: string; bg: string }> = {
-  todo:        { label: 'Yapılacak',    bg: '#c4c4c4' },
-  in_progress: { label: 'Çalışılıyor',  bg: '#fdab3d' },
+  todo:        { label: 'To Do',    bg: '#c4c4c4' },
+  in_progress: { label: 'In Progress',  bg: '#fdab3d' },
   test:        { label: 'Test',         bg: '#f39c12' },
-  done:        { label: 'Tamamlandı',   bg: '#00c875' },
-  stuck:       { label: 'Takıldı',      bg: '#df2f4a' },
-  waiting:     { label: 'Bekliyor',     bg: '#a25ddc' },
+  done:        { label: 'Done',   bg: '#00c875' },
+  stuck:       { label: 'Stuck',      bg: '#df2f4a' },
+  waiting:     { label: 'Waiting',     bg: '#a25ddc' },
 }
 
 const ORDER: StatusKey[] = ['todo', 'in_progress', 'test', 'done', 'stuck', 'waiting']
@@ -34,7 +34,7 @@ export function StatusCell({ value, onChange }: Props) {
   return (
     <DropdownPortal trigger={trigger} width={172} wrapperClassName="w-full h-full cursor-pointer">
       <div className="px-2 pb-1 pt-2">
-        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-1 mb-1">Durum Seç</p>
+        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-1 mb-1">Select Status</p>
       </div>
       {ORDER.map((s) => {
         const c = STATUS_CONFIG[s]

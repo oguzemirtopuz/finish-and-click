@@ -1,8 +1,8 @@
 /**
- * Supabase'e başlangıç verisi ekler.
- * Tarayıcı konsolunda: import('/src/lib/seed.ts').then(m => m.seed())
+ * Seeds initial data into Supabase.
+ * Run in the browser console: import('/src/lib/seed.ts').then(m => m.seed())
  *
- * Kesin şema:
+ * Expected schema:
  *   tasks      → id, group_id, parent_id, title, status, priority, assignee,
  *                start_date, end_date, rating, numeric_value, progress, order
  *   task_groups → id, workspace_id, name, color, order, collapsed
@@ -11,40 +11,40 @@
 import { supabase } from './supabase'
 
 export async function seed() {
-  console.log('🌱 Seed başlıyor...')
+  console.log('🌱 Seeding started...')
 
   // ── 1. Workspace ────────────────────────────────────────────
   const { data: ws, error: wsErr } = await supabase
     .from('workspaces')
-    .insert({ name: 'Ana Çalışma Alanı', type: 'personal' })
+    .insert({ name: 'Main Workspace', type: 'personal' })
     .select()
     .single()
   if (wsErr) { console.error('❌ workspace:', wsErr.message); return }
   console.log('✅ Workspace:', ws.id)
 
-  // ── 2. Gruplar ──────────────────────────────────────────────
+  // ── 2. Groups ────────────────────────────────────────────────
   const { data: groups, error: gErr } = await supabase
     .from('task_groups')
     .insert([
-      { workspace_id: ws.id, name: 'Bu Haftaki İşler', color: '#0073ea', order: 0, collapsed: false },
-      { workspace_id: ws.id, name: 'Gelecek Planları',  color: '#00c875', order: 1, collapsed: false },
+      { workspace_id: ws.id, name: 'This Week\'s Tasks', color: '#0073ea', order: 0, collapsed: false },
+      { workspace_id: ws.id, name: 'Future Plans',       color: '#00c875', order: 1, collapsed: false },
     ])
     .select()
   if (gErr) { console.error('❌ task_groups:', gErr.message); return }
-  console.log('✅ Gruplar:', groups.length)
+  console.log('✅ Groups:', groups.length)
 
   const g1 = groups[0]
   const g2 = groups[1]
 
-  // ── 3. Ana görevler ─────────────────────────────────────────
+  // ── 3. Root tasks ────────────────────────────────────────────
   const { data: tasks, error: tErr } = await supabase
     .from('tasks')
     .insert([
-      // — Grup 1
+      // — Group 1
       {
         group_id: g1.id,
         parent_id: null,
-        title: 'Landing page yenile',
+        title: 'Refresh landing page',
         status: 'in_progress',
         priority: 'high',
         assignee: 'Ali',
@@ -58,10 +58,10 @@ export async function seed() {
       {
         group_id: g1.id,
         parent_id: null,
-        title: 'API entegrasyonu yaz',
+        title: 'Write API integration',
         status: 'todo',
         priority: 'medium',
-        assignee: 'Ayşe',
+        assignee: 'Alice',
         start_date: '2026-04-08',
         end_date: '2026-04-12',
         rating: 3,
@@ -72,7 +72,7 @@ export async function seed() {
       {
         group_id: g1.id,
         parent_id: null,
-        title: 'Testleri tamamla',
+        title: 'Complete tests',
         status: 'stuck',
         priority: 'critical',
         assignee: 'Mehmet',
@@ -83,11 +83,11 @@ export async function seed() {
         progress: 33,
         order: 2,
       },
-      // — Grup 2
+      // — Group 2
       {
         group_id: g2.id,
         parent_id: null,
-        title: 'Mobil uygulama tasarımı',
+        title: 'Mobile app design',
         status: 'todo',
         priority: 'high',
         assignee: 'Zeynep',
@@ -101,7 +101,7 @@ export async function seed() {
       {
         group_id: g2.id,
         parent_id: null,
-        title: 'SEO iyileştirme',
+        title: 'SEO improvements',
         status: 'waiting',
         priority: 'low',
         assignee: 'Ali',
@@ -115,15 +115,15 @@ export async function seed() {
     ])
     .select()
   if (tErr) { console.error('❌ tasks:', tErr.message); return }
-  console.log('✅ Görevler:', tasks.length)
+  console.log('✅ Tasks:', tasks.length)
 
-  // ── 4. Alt görevler (parent: "Landing page yenile") ─────────
+  // ── 4. Subtasks (parent: "Refresh landing page") ─────────────────────
   const parent = tasks[0]
   const { error: subErr } = await supabase.from('tasks').insert([
     {
       group_id: g1.id,
       parent_id: parent.id,
-      title: 'Hero section tasarla',
+      title: 'Design hero section',
       status: 'done',
       priority: 'medium',
       assignee: 'Ali',
@@ -137,7 +137,7 @@ export async function seed() {
     {
       group_id: g1.id,
       parent_id: parent.id,
-      title: 'Mobil uyum sağla',
+      title: 'Ensure mobile responsiveness',
       status: 'done',
       priority: 'medium',
       assignee: 'Ali',
@@ -151,10 +151,10 @@ export async function seed() {
     {
       group_id: g1.id,
       parent_id: parent.id,
-      title: 'SEO meta etiketleri',
+      title: 'SEO meta tags',
       status: 'in_progress',
       priority: 'low',
-      assignee: 'Ayşe',
+      assignee: 'Alice',
       start_date: '2026-04-09',
       end_date: '2026-04-11',
       rating: 3,
@@ -164,7 +164,7 @@ export async function seed() {
     },
   ])
   if (subErr) { console.error('❌ subtasks:', subErr.message); return }
-  console.log('✅ Alt görevler eklendi.')
+  console.log('✅ Subtasks added.')
 
-  console.log('🎉 Seed tamamlandı! Sayfayı yenile.')
+  console.log('🎉 Seed complete! Refresh the page.')
 }

@@ -45,10 +45,10 @@ export function ColumnManager() {
         )}
       >
         <Columns3 size={14} />
-        Sütunlar
+        Columns
         {visible < hideable.length && (
           <span className="bg-blue-100 text-blue-600 text-[10px] font-bold px-1.5 rounded-full">
-            {hideable.length - visible} gizli
+            {hideable.length - visible} hidden
           </span>
         )}
       </button>
@@ -60,7 +60,7 @@ export function ColumnManager() {
           className="bg-white rounded-xl shadow-2xl border border-gray-100 py-2"
         >
           <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-4 py-2">
-            Sütunları Yönet
+            Manage Columns
           </p>
           {columns.map((col) => (
             <div

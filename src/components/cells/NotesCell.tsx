@@ -35,7 +35,7 @@ export function NotesCell({ value, onChange }: Props) {
       className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 cursor-default px-1 transition-colors"
     >
       <FileText size={12} className="flex-shrink-0 text-gray-300" />
-      <span className="truncate">{value || <span className="text-gray-300 italic">Çift tık ekle</span>}</span>
+      <span className="truncate">{value || <span className="text-gray-300 italic">Double click to add</span>}</span>
     </div>
   )
 }

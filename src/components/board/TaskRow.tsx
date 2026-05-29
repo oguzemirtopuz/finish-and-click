@@ -59,7 +59,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
   const otherGroups = groups.filter(g => g.id !== task.group_id)
 
   async function handleMoveToGroup(targetGroupId: string) {
-    if (!window.confirm('Görevi bu gruba taşımak istediğinize emin misiniz?')) return
+    if (!window.confirm('Are you sure you want to move the task to this group?')) return
     try {
       setIsMoving(true)
       const { moveTaskToGroup } = await import('../../lib/supabase')
@@ -71,9 +71,9 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
         return t
       })
       setTasks(updatedTasks)
-      toast.success('Görev taşındı')
+      toast.success('Task moved')
     } catch (err: any) {
-      toast.error('Görev taşınırken hata: ' + err.message)
+      toast.error('Error moving task: ' + err.message)
     } finally {
       setIsMoving(false)
     }
@@ -81,23 +81,23 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
 
   async function handleMoveToWorkspace(targetWsId: string) {
     const ws = workspaces.find(w => w.id === targetWsId)
-    if (!window.confirm(`Görevi "${ws?.name}" alanına taşımak istediğinize emin misiniz?`)) return
+    if (!window.confirm(`Are you sure you want to move the task to workspace "${ws?.name}"?`)) return
     try {
       setIsMoving(true)
       const { moveTaskToWorkspace } = await import('../../lib/supabase')
       await moveTaskToWorkspace(task.id, targetWsId)
       
       setTasks(tasks.filter(t => t.id !== task.id && t.parent_id !== task.id))
-      toast.success('Görev başka bir çalışma alanına taşındı')
+      toast.success('Task moved to another workspace')
     } catch (err: any) {
-      toast.error('Görev taşınırken hata: ' + err.message)
+      toast.error('Error moving task: ' + err.message)
     } finally {
       setIsMoving(false)
     }
   }
 
   async function handleMoveToParent(parentId: string) {
-    if (!window.confirm('Görevi bu görevin altına taşımak istediğinize emin misiniz?')) return
+    if (!window.confirm('Are you sure you want to move the task under this task?')) return
     try {
       setIsMoving(true)
       const { moveTaskToParent, recalculateProgress } = await import('../../lib/supabase')
@@ -111,9 +111,9 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
       })
       setTasks(updatedTasks)
       await recalculateProgress(parentId)
-      toast.success('Görev alt görev olarak taşındı')
+      toast.success('Task moved as subtask')
     } catch (err: any) {
-      toast.error('Görev taşınırken hata: ' + err.message)
+      toast.error('Error moving task: ' + err.message)
     } finally {
       setIsMoving(false)
     }
@@ -131,29 +131,29 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
       upsertTask({ ...task, assigned_to: value })
       await updateTask(task.id, { assigned_to: value })
 
-      if (value === 'Ortak') {
+      if (value === 'Shared') {
         if (!currentWs || currentWs.type !== 'personal') return
         const { ensureSharedWorkspace, moveTaskToWorkspace, supabase } = await import('../../lib/supabase')
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) {
-          toast.error("Lütfen oturum açın.")
+          toast.error("Please log in.")
           return
         }
-        const targetName = `${currentWs.name} - Ortak`
+        const targetName = `${currentWs.name} - Shared`
         const sharedWorkspaces = store.workspaces.filter(w => w.type === 'shared')
         let targetWs = sharedWorkspaces.find(w => w.name === targetName)
         if (!targetWs) {
           if (sharedWorkspaces.length > 0) {
             const useExisting = window.confirm(
-              `"${targetName}" adında bir ortak alan henüz yok.\n\n` +
-              `Mevcut ortak alanlardan birini mi kullanmak istersiniz?\n\n` +
-              `Yoksa bu göreve özel yeni bir "${targetName}" alanı oluşturulsun mu?`
+              `"${targetName}" There is no shared workspace named.\n\n` +
+              `Would you like to use one of the existing shared workspaces?\n\n` +
+              `Or create a new "${targetName}" workspace for this task?`
             )
             if (useExisting) targetWs = sharedWorkspaces[0]
           } else {
             const createNew = window.confirm(
-              `Görevi ortak bir alana taşımak üzeresiniz.\n\n` +
-              `"${targetName}" isminde yeni bir ortak çalışma alanı oluşturulsun mu?`
+              `You are about to move the task to a shared workspace.\n\n` +
+              `Create a new "${targetName}" shared workspace for this task?`
             )
             if (!createNew) {
               upsertTask({ ...task, assigned_to: null })
@@ -163,14 +163,14 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
           }
         }
         if (!targetWs) targetWs = await ensureSharedWorkspace(currentWs.id, user.id)
-        if (!targetWs) throw new Error("Hedef çalışma alanı belirlenemedi.")
+        if (!targetWs) throw new Error("Target workspace could not be determined.")
         await moveTaskToWorkspace(task.id, targetWs.id)
         store.setTasks(store.tasks.filter(t => t.id !== task.id))
-        toast.success(`"${task.title}" görevi “${targetWs.name}” alanına başarıyla taşındı.`)
+        toast.success(`Task "${task.title}" successfully moved to workspace "${targetWs.name}".`)
       }
     } catch (err: any) {
       console.error("Migration error:", err)
-      toast.error("Bir hata oluştu: " + err.message)
+      toast.error("An error occurred: " + err.message)
     }
   }
 
@@ -209,12 +209,12 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
   }
 
   async function handleDelete() {
-    if (!window.confirm('Bu görevi silmek istediğinize emin misiniz?')) return
+    if (!window.confirm('Are you sure you want to delete this task?')) return
     try {
       await deleteTask(task.id)
-      toast.success('Görev silindi')
+      toast.success('Task deleted')
     } catch (err: any) {
-      toast.error('Görev silinirken hata oluştu: ' + err.message)
+      toast.error('Error deleting task: ' + err.message)
     }
   }
 
@@ -304,7 +304,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
                   ? "text-blue-500 bg-blue-500/10 hover:bg-blue-500/20"
                   : "text-[#808191] hover:bg-[#252836] hover:text-blue-400"
               )}
-              title={hasNote ? "Notu Görüntüle" : "Not Ekle"}
+              title={hasNote ? "View Note" : "Add Note"}
             >
               <MessageSquare size={16} fill={hasNote ? "currentColor" : "none"} />
             </button>
@@ -325,7 +325,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
         expanded && 'bg-[#131520]',
         isOver && 'ring-2 ring-blue-500 ring-inset bg-blue-500/10'
       )}>
-        {/* Renk şeridi */}
+        {/* Color stripe */}
         <div
           className="shrink-0 transition-opacity"
           style={{ width: STRIPE_W, background: groupColor, opacity: expanded ? 1 : 0 }}
@@ -389,7 +389,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
             <button
               onClick={() => setSelectedTaskId(task.id)}
               className="shrink-0 text-blue-400 hover:text-blue-300 transition-all opacity-60 hover:opacity-100"
-              title="Not/Yorum Var"
+              title="Has Note/Comment"
             >
               <MessageSquare size={11} fill="currentColor" />
             </button>
@@ -398,7 +398,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
           <button
             onClick={handleDelete}
             className="shrink-0 text-gray-300 hover:text-red-500 opacity-20 group-hover/row:opacity-100 transition-all"
-            title="Görevi Sil"
+            title="Delete Task"
           >
             <Trash2 size={11} />
           </button>
@@ -411,7 +411,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
                   "shrink-0 text-gray-400 hover:text-blue-400 opacity-0 group-hover/row:opacity-100 transition-all",
                   isMoving && "animate-pulse"
                 )}
-                title="Başka Gruba/Alana Taşı"
+                title="Move to Group/Workspace"
               >
                 <ExternalLink size={11} />
               </button>
@@ -420,11 +420,11 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
           >
             <div className="max-h-64 overflow-y-auto">
               <div className="p-2 border-b border-gray-100/10 bg-[#1A1F36]">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Hangi Gruba Taşınsın?</span>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Move to which group?</span>
               </div>
               <div className="py-1">
                 {otherGroups.length === 0 && otherWorkspaces.length === 0 && (
-                  <div className="px-3 py-2 text-[11px] text-gray-500 italic">Başka hedef bulunamadı.</div>
+                  <div className="px-3 py-2 text-[11px] text-gray-500 italic">No other target found.</div>
                 )}
                 {otherGroups.map(g => (
                   <button
@@ -436,9 +436,9 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
                   </button>
                 ))}
 
-                {/* Root Görevler (Parent olabilecekler) */}
+                {/* Root Tasks (Potential Parents) */}
                 <div className="px-2 py-1 mt-1 border-t border-gray-100/10 bg-[#1A1F36]">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Hangi Görevin Altına?</span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Under which task?</span>
                 </div>
                 {groups.map(g => {
                   const groupTasks = tasks.filter(t => t.group_id === g.id && !t.parent_id && t.id !== task.id)
@@ -462,7 +462,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
                 {otherWorkspaces.length > 0 && (
                   <>
                     <div className="px-2 py-1 mt-1 border-t border-gray-100/10 bg-[#1A1F36]">
-                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Diğer Alanlar</span>
+                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Other Workspaces</span>
                     </div>
                     {otherWorkspaces.map(ws => (
                       <button
@@ -472,7 +472,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
                       >
                         <span className="truncate pr-2">{ws.name}</span>
                         <span className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100/10 text-gray-400 font-medium shrink-0">
-                          {ws.type === 'personal' ? 'Kişisel' : 'Ortak'}
+                          {ws.type === 'personal' ? 'Personal' : 'Shared'}
                         </span>
                       </button>
                     ))}
@@ -508,7 +508,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
           </div>
         ))}
 
-        {/* Sağ simetri barı */}
+        {/* Right symmetry bar */}
         <div style={{ width: STRIPE_W }} className="shrink-0 bg-transparent" />
       </div>
 

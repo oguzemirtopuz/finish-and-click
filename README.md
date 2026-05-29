@@ -1,4 +1,4 @@
-# 🚀 Finish & Click — Modern Project & Task Management Platform (monday.com Clone) 📊
+# 🚀 Finish & Click — Modern Project & Task Management Platform
 
 [![React 19](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
 [![Vite 8](https://img.shields.io/badge/Vite-8.0-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev)
@@ -7,17 +7,27 @@
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
 [![Netlify](https://img.shields.io/badge/Netlify-00C8C5?style=for-the-badge&logo=netlify&logoColor=white)](https://netlify.com)
 
-**Finish & Click** is a hybrid, asynchronous, and real-time project management platform that combines a **monday.com-style table view** with a **classic Kanban board view**, allowing teams and individual users to manage their workflows, budgets, and tasks under one roof.
+---
 
-Powered by a **Supabase** serverless database backend and a modern **React 19 + Vite 8** frontend architecture, the application offers a complete SaaS experience with drag-and-drop cells, subtask support, a team invitation mechanism, and advanced security layers.
+## 🚀 Live Demo
+> [!TIP]
+> **Experience Finish & Click live:** [Live Demo / Web App Link Here] *(Please update with your actual live URL)*
+
+---
+
+## 🎯 The Problem
+Modern teams are overwhelmed by scattered tools. Switching between spreadsheets for budgets, Kanban boards for tasks, and chat apps for communication leads to massive productivity loss and fragmented data. Managing a project should be intuitive, fast, and centralized.
+
+## 💡 The Solution & Value Proposition
+**Finish & Click** is a hybrid, asynchronous, and real-time project management platform that combines a **monday.com-style table view** with a **classic Kanban board view**. It allows teams and individual users to manage workflows, track budgets, and collaborate on tasks under one roof. With an ultra-responsive drag-and-drop interface and a real-time serverless database backend, Finish & Click offers an enterprise-grade SaaS experience built for maximum team velocity.
 
 ---
 
 ## 🌟 Advanced Features and Modules
 
-### 📋 1. Hybrid monday.com Table & Kanban View
-*   **Interactive Table Cells:** Built on monday.com's popular cell structure, featuring dynamic data columns:
-    *   👥 **Assignee:** Assign team members to tasks, complete with profile avatars and user mapping.
+### 📋 1. Hybrid Table & Kanban View
+*   **Interactive Table Cells:** Built on a powerful cell structure, featuring dynamic data columns:
+    *   👥 **Assignee:** Assign team members to tasks, complete with profile avatars.
     *   🟢 **Status:** Customizable, color-coded statuses like *To Do*, *Working on it*, *Stuck*, and *Done*.
     *   ⚠️ **Priority:** Task classification with *Critical*, *High*, *Medium*, and *Low* levels.
     *   ⏳ **Timeline:** Calendar tracking featuring task start and end dates.
@@ -27,17 +37,17 @@ Powered by a **Supabase** serverless database backend and a modern **React 19 + 
 *   **Kanban View:** Instantly convert all table data into Kanban cards with a single click and easily update statuses using drag-and-drop functionality.
 
 ### 👥 2. Supabase-Powered Team & Invitation Infrastructure
-*   **RPC Invitation Function (`invite_user_by_email`):** Workspace owners can invite team members by email. When the invited member registers, the invitation is matched and they are automatically added to the workspace.
+*   **Secure Invites:** Workspace owners can seamlessly invite team members via email. When the invited member registers, they are automatically added to the workspace.
 *   **Multiple Workspaces:** Users can create personal workspaces and switch between their team workspaces with a single click.
-*   **Role Management:** Restrict workspace permissions using *Owner* and *Member* roles.
+*   **Role Management:** Restrict workspace permissions securely using *Owner* and *Member* roles.
 
 ### 🏗️ 3. Deep Task Hierarchy & Drag and Drop
-*   **Advanced DND Kit (`@dnd-kit/sortable`):** Fluidly drag and drop task groups, rows, and Kanban cards with micro-animations.
-*   **Subtasks:** Add unlimited subtasks under parent tasks, and synchronize their progress (`ProgressCell`) with the parent task.
+*   **Advanced DND Kit:** Fluidly drag and drop task groups, rows, and Kanban cards with beautiful micro-animations.
+*   **Subtasks:** Add unlimited subtasks under parent tasks, and perfectly synchronize their progress with the parent task.
 *   **Comments Module:** Team members can comment in real-time and provide file references directly in the task details panel.
 
 ### 🛡️ 4. Maximum Security with Row Level Security (RLS)
-*   **Security Protocols (Postgres RLS):** Thanks to RLS policies defined on Supabase, no user can read, update, or delete workspace data, tasks, or comments without proper authorization.
+*   **Security Protocols:** Thanks to RLS policies defined on Supabase, no user can read, update, or delete workspace data, tasks, or comments without proper authorization.
 *   **Circular Dependency Solution:** High-performance and secure data queries are achieved using custom RLS functions at the PostgreSQL level.
 
 ---
@@ -53,13 +63,13 @@ Powered by a **Supabase** serverless database backend and a modern **React 19 + 
 
 ## 📋 Database Schema (Supabase Schema)
 
-The PostgreSQL database structure required for the application is provided in the `supabase_setup.sql` file. The file includes the following tables and triggers:
+The PostgreSQL database structure required for the application is provided in the `supabase_setup.sql` file. It automatically generates:
 1.  **`profiles`**: User profiles synchronized with the auth.users table.
 2.  **`workspaces`**: Personal or team-based workspaces.
 3.  **`workspace_members`**: Members and their roles within a workspace.
 4.  **`workspace_invites`**: Pending email-based workspace invitations.
 5.  **`task_groups`**: Boards grouping tasks (e.g., *This Week*, *Next Month*).
-6.  **`tasks`**: Main tasks containing monday.com cell values (budget, timeline, status, priority).
+6.  **`tasks`**: Main tasks containing cell values (budget, timeline, status, priority).
 7.  **`subtasks`**: Subtask breakdowns tied to parent tasks.
 8.  **`task_comments`**: In-task team discussions.
 
@@ -67,9 +77,9 @@ The PostgreSQL database structure required for the application is provided in th
 
 ## 🚀 Complete Installation and Setup
 
-### 1. Clone or Download the Repository
+### 1. Clone the Repository
 ```bash
-git clone https://github.com/OguzEmir177/finish-and-click.git
+git clone https://github.com/oguzemirtopuz/finish-and-click.git
 cd finish-and-click
 ```
 
@@ -81,7 +91,7 @@ npm install
 ### 3. Setup Supabase
 1. Create a new project on [Supabase](https://supabase.com).
 2. Go to the **SQL Editor** in your Supabase dashboard.
-3. Paste the contents of `supabase_setup.sql` from your project folder and click **Run**. All tables, RLS rules, and invitation functions will be created in seconds.
+3. Paste the contents of `supabase_setup.sql` from your project folder and click **Run**. All tables, RLS rules, and invitation functions will be created instantly.
 
 ### 4. Configure Environment Variables
 Create a `.env` file in the root directory of the project and add your Supabase credentials:
@@ -94,13 +104,13 @@ VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```bash
 npm run dev
 ```
-*   **Address:** You can open [http://localhost:5173](http://localhost:5173) in your browser to start using the platform!
+*   **Address:** Open [http://localhost:5173](http://localhost:5173) in your browser to start using the platform!
 
 ---
 
 ## ⚡ Deploying on Netlify
 
-This project is pre-configured to be deployed on Netlify with a single click (`netlify.toml`).
+This project is pre-configured to be deployed on Netlify with a single click.
 1. Upload your project to GitHub.
 2. Log in to your Netlify account and choose this repository using **"Import from Git"**.
 3. Go to the **Environment Variables** settings in Netlify and add the `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` variables.
@@ -108,15 +118,5 @@ This project is pre-configured to be deployed on Netlify with a single click (`n
 
 ---
 
-## 👤 About the Developer
-
-This project is developed by **Oğuz Emir Topuz**.
-
-*   **Age:** 14
-*   **Interests & Passions:** A football enthusiast and an advanced software developer.
-*   **What He Does:** Works on SaaS applications, modern and elegant websites, and 3D games.
-*   **Contact & Portfolio:** [My GitHub Profile](https://github.com/OguzEmir177)
-
----
-
-⭐ If you like this project, don't forget to give it a star! Development is ongoing.
+## 🛡️ License
+This project is open-source. Please check the repository for further licensing details.

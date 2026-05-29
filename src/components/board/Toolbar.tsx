@@ -32,9 +32,9 @@ export function Toolbar({ search, onSearch }: Props) {
       setGroups([...groups, g])
       setGroupName('')
       setAdding(false)
-      toast.success('Grup oluşturuldu')
+      toast.success('Group created')
     } catch (err: any) {
-      toast.error(err.message || 'Grup oluşturulurken hata oluştu')
+      toast.error(err.message || 'Error creating group')
     }
   }
 
@@ -88,12 +88,12 @@ export function Toolbar({ search, onSearch }: Props) {
             width={220}
           >
             <div style={{ padding: 8 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: 8, paddingLeft: 4 }}>Sıralama Ölçütü</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: 8, paddingLeft: 4 }}>Sort By</div>
               {[
-                { label: 'İsim (A-Z)', col: 'title', dir: 'asc' as const },
-                { label: 'Durum', col: 'status', dir: 'asc' as const },
-                { label: 'Öncelik', col: 'priority', dir: 'asc' as const },
-                { label: 'Oluşturulma Tarihi', col: 'created_at', dir: 'desc' as const },
+                { label: 'Name (A-Z)', col: 'title', dir: 'asc' as const },
+                { label: 'Status', col: 'status', dir: 'asc' as const },
+                { label: 'Priority', col: 'priority', dir: 'asc' as const },
+                { label: 'Creation Date', col: 'created_at', dir: 'desc' as const },
               ].map(({ label, col, dir }) => (
                 <button key={label} onClick={() => useBoardStore.getState().setSorting(col, dir)}
                   style={{ width: '100%', textAlign: 'left', padding: '6px 8px', fontSize: 13, color: '#374151', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 4 }}
@@ -105,7 +105,7 @@ export function Toolbar({ search, onSearch }: Props) {
               <button onClick={() => useBoardStore.getState().setSorting(null, 'asc')}
                 style={{ width: '100%', textAlign: 'left', padding: '6px 8px', fontSize: 12, color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 4 }}
                 onMouseEnter={e => (e.currentTarget.style.background = '#fef2f2')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>
-                Sıralamayı Sıfırla
+                Reset Sorting
               </button>
             </div>
           </DropdownPortal>

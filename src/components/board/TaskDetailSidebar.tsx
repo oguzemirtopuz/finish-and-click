@@ -56,7 +56,7 @@ export function TaskDetailSidebar() {
       await updateTask(task.id, { title })
       setEditingTitle(false)
     } catch (err: any) {
-      toast.error("Başlık güncellenirken hata oluştu")
+      toast.error("Error updating title")
     }
   }
 
@@ -83,7 +83,7 @@ export function TaskDetailSidebar() {
           <div className="flex-1 mr-4">
             <div className="flex items-center gap-2 text-[#808191] text-xs font-semibold mb-2 uppercase tracking-wider">
                <Hash size={12} />
-               <span>Görev Detayları</span>
+               <span>Task Details</span>
             </div>
             {editingTitle ? (
               <input
@@ -99,7 +99,7 @@ export function TaskDetailSidebar() {
                 onClick={() => setEditingTitle(true)}
                 className="text-2xl font-bold text-white cursor-text hover:bg-[#252836] rounded px-2 -ml-2 py-1 transition-colors"
               >
-                {title || "Başlıksız Görev"}
+                {title || "Untitled Task"}
               </h2>
             )}
           </div>
@@ -119,22 +119,22 @@ export function TaskDetailSidebar() {
             <div className="bg-[#252836] p-4 rounded-xl border border-[#2D313E]">
                 <div className="flex items-center gap-2 text-[#808191] text-xs mb-2">
                     <CheckCircle2 size={14} />
-                    <span>Durum</span>
+                    <span>Status</span>
                 </div>
                 <div className="text-sm font-medium text-white flex items-center gap-2 capitalize">
-                    {task?.status === 'done' ? 'Tamamlandı' : task?.status === 'in_progress' ? 'Çalışılıyor' : 'Bekliyor'}
+                    {task?.status === 'done' ? 'Done' : task?.status === 'in_progress' ? 'In Progress' : 'Waiting'}
                 </div>
             </div>
             <div className="bg-[#252836] p-4 rounded-xl border border-[#2D313E]">
                 <div className="flex items-center gap-2 text-[#808191] text-xs mb-2">
                     <User size={14} />
-                    <span>Sorumlu</span>
+                    <span>Assignee</span>
                 </div>
                 <div className="text-sm font-medium text-white truncate">
                     {(() => {
                       const { members } = useBoardStore.getState()
                       const profile = members.find(m => m.id === task?.assigned_to)
-                      return profile ? (profile.full_name || profile.email) : 'Atanmamış'
+                      return profile ? (profile.full_name || profile.email) : 'Unassigned'
                     })()}
                 </div>
             </div>
@@ -157,16 +157,16 @@ export function TaskDetailSidebar() {
           <div className="pt-4 border-t border-[#2D313E]">
              <div className="flex items-center gap-2 text-[#808191] font-semibold mb-4">
                 <MessageSquare size={18} />
-                <span>Son Etkinlikler</span>
+                <span>Recent Activity</span>
              </div>
              <div className="space-y-4">
                 <div className="flex gap-3">
                     <div className="w-8 h-8 rounded-full bg-[#3E4255] flex items-center justify-center text-xs text-white">AS</div>
                     <div>
                         <div className="text-xs text-gray-400">
-                            <span className="text-blue-400 font-medium cursor-pointer">Siz</span> bu görevi oluşturdu
+                            <span className="text-blue-400 font-medium cursor-pointer">You</span> created this task
                         </div>
-                        <div className="text-[10px] text-gray-500">Bugün, 14:20</div>
+                        <div className="text-[10px] text-gray-500">Today, 14:20</div>
                     </div>
                 </div>
              </div>
@@ -178,13 +178,13 @@ export function TaskDetailSidebar() {
         <div className="p-4 bg-[#13151F] border-t border-[#2D313E] flex items-center justify-between">
             <div className="flex items-center gap-2 text-[#808191] text-[10px]">
                 <Calendar size={12} />
-                <span>Oluşturulma: {task?.created_at ? new Date(task.created_at).toLocaleDateString('tr-TR') : '-'}</span>
+                <span>Created At: {task?.created_at ? new Date(task.created_at).toLocaleDateString('en-US') : '-'}</span>
             </div>
             <button 
                 onClick={handleClose}
                 className="bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-lg shadow-blue-500/10"
             >
-                Kapat
+                Close
             </button>
         </div>
       </div>

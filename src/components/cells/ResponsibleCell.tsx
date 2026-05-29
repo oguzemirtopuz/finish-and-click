@@ -33,10 +33,10 @@ export function ResponsibleCell({ value, onChange }: Props) {
     })
   }, [])
 
-  // Listeyi oluştur (members artık Profile nesneleri: { id, email })
+  // Build the list (members are now Profile objects: { id, email })
   const availableMembers = [...members]
 
-  // Kendimi her zaman ekle (eğer listede yoksam)
+  // Always include the current user (if not already in the list)
   if (currentUserId && currentUserEmail && !availableMembers.some(m => m.id === currentUserId)) {
     availableMembers.push({ id: currentUserId, email: currentUserEmail, full_name: null })
   }
@@ -46,7 +46,7 @@ export function ResponsibleCell({ value, onChange }: Props) {
     (m.email.toLowerCase().includes(search.toLowerCase()))
   )
 
-  // Seçili kişiyi bul
+  // Find the selected profile
   const selectedProfile = members.find(m => m.id === value) || availableMembers.find(m => m.id === value)
   const getDisplayName = (m: any) => m.full_name || m.email
 
@@ -61,25 +61,25 @@ export function ResponsibleCell({ value, onChange }: Props) {
       const { insertWorkspaceContact } = await import('../../lib/supabase')
       const newMember = await insertWorkspaceContact(activeWorkspaceId, customName.trim())
 
-      // Store'u güncelle (yerel listeye ekle)
+      // Update the store (add to local list)
       const { setMembers, members: existing } = useBoardStore.getState()
       setMembers([...existing, newMember])
 
-      // Seç ve kapat
+      // Select and close
       onChange(newMember.id)
       setAddingCustom(false)
       setCustomName('')
       setSearch('')
-      toast.success(`"${newMember.full_name ?? newMember.email}" sorumlu olarak eklendi`)
+      toast.success(`"${newMember.full_name ?? newMember.email}" added as assignee`)
     } catch (err: any) {
       console.error("Custom member error:", err)
-      // FK kısıtlaması hatası (23503) veya başka DB hatası
+      // FK constraint error (23503) or other DB error
       if (err?.code === '23503') {
-        toast.error('Veritabanı kısıtlaması: workspace_contacts tablosunu ve FK kısıtlamasını kontrol edin.')
+        toast.error('Database constraint: please check the workspace_contacts table and its FK constraint.')
       } else if (err?.code === '42P01') {
-        toast.error("workspace_contacts tablosu henüz oluşturulmamış. Supabase'de SQL migration çalıştırın.")
+        toast.error('The workspace_contacts table does not exist yet. Run the SQL migration in Supabase.')
       } else {
-        toast.error('Sorumlu eklenirken hata: ' + (err?.message ?? 'Bilinmeyen hata'))
+        toast.error('Error adding assignee: ' + (err?.message ?? 'Unknown error'))
       }
     } finally {
       setSavingCustom(false)
@@ -103,7 +103,7 @@ export function ResponsibleCell({ value, onChange }: Props) {
       <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold ring-2 ring-[#0F111A] bg-gray-500 flex-shrink-0">
         ?
       </div>
-      <span className="text-xs text-gray-400 truncate max-w-[80px]">Bilinmeyen</span>
+      <span className="text-xs text-gray-400 truncate max-w-[80px]">Unknown</span>
     </div>
   ) : (
     <div className="flex items-center justify-center w-full cursor-pointer group/av hover:opacity-80 transition-opacity px-4">
@@ -120,7 +120,7 @@ export function ResponsibleCell({ value, onChange }: Props) {
           autoFocus
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="İsim veya e-posta ara..."
+          placeholder="Search name or email..."
           className="w-full text-xs bg-[#1A1F36] border border-[#2A2E44] text-white rounded-md px-2 py-1.5 outline-none focus:border-blue-500"
           onClick={(e) => e.stopPropagation()}
         />
@@ -130,7 +130,7 @@ export function ResponsibleCell({ value, onChange }: Props) {
           onMouseDown={(e) => { e.preventDefault(); onChange(null) }}
           className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:bg-red-500/10 transition-colors border-b border-[#1D1F2B]"
         >
-          Görevi kaldır
+          Remove assignee
         </button>
       )}
 
@@ -165,7 +165,7 @@ export function ResponsibleCell({ value, onChange }: Props) {
               autoFocus
               value={customName}
               onChange={(e) => setCustomName(e.target.value)}
-              placeholder="İsim girin (Örn: Oğuz)"
+              placeholder="Enter name (e.g. Oguz)"
               className="w-full text-xs bg-[#0F111A] border border-[#2D313E] text-white rounded-md px-2 py-1.5 outline-none"
               onKeyDown={(e) => e.key === 'Enter' && handleAddCustom()}
             />
@@ -175,13 +175,13 @@ export function ResponsibleCell({ value, onChange }: Props) {
                 disabled={savingCustom}
                 className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white text-[10px] py-1 rounded"
               >
-                {savingCustom ? '...' : 'Ekle'}
+                {savingCustom ? '...' : 'Add'}
               </button>
               <button
                 onMouseDown={(e) => { e.preventDefault(); setAddingCustom(false) }}
                 className="flex-1 bg-gray-700 hover:bg-gray-600 text-white text-[10px] py-1 rounded"
               >
-                İptal
+                Cancel
               </button>
             </div>
           </div>
@@ -193,13 +193,13 @@ export function ResponsibleCell({ value, onChange }: Props) {
             <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-[12px]">
               +
             </div>
-            <span>Sorumlu Ekle</span>
+            <span>Add Assignee</span>
           </button>
         )}
 
         {filtered.length === 0 && !addingCustom && (
           <div className="px-3 py-3 text-xs text-gray-500 text-center">
-            Kullanıcı bulunamadı
+            No users found
           </div>
         )}
       </div>

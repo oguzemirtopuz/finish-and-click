@@ -21,10 +21,10 @@ export function Auth() {
       } else {
         const { error } = await supabase.auth.signUp({ email, password })
         if (error) throw error
-        alert('Kayıt başarılı! Lütfen giriş yapın (E-posta doğrulaması kapalı varsayılarak giriş izni verilir).')
+        alert('Registration successful! Please log in (Login permitted assuming email verification is disabled).')
       }
     } catch (err: any) {
-      setError(err.message || 'Bir hata oluştu')
+      setError(err.message || 'An error occurred')
     } finally {
       setLoading(false)
     }
@@ -39,7 +39,7 @@ export function Auth() {
         </div>
         
         <h2 className="text-2xl font-bold text-center text-white mb-8">
-          {isLogin ? 'Hesabınıza Giriş Yapın' : 'Yeni Hesap Oluşturun'}
+          {isLogin ? 'Log into your account' : 'Create a new account'}
         </h2>
         
         {error && (
@@ -50,18 +50,18 @@ export function Auth() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div>
-            <label className="block text-[13px] font-semibold text-gray-400 mb-1.5 ml-1">E-posta Adresi</label>
+            <label className="block text-[13px] font-semibold text-gray-400 mb-1.5 ml-1">Email Address</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full text-[15px] outline-none border border-[#2C334A] bg-[#20263c] text-white rounded-lg px-4 py-3 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-shadow placeholder:text-gray-500"
-              placeholder="isim@sirket.com"
+              placeholder="name@company.com"
             />
           </div>
           <div>
-            <label className="block text-[13px] font-semibold text-gray-400 mb-1.5 ml-1">Şifre</label>
+            <label className="block text-[13px] font-semibold text-gray-400 mb-1.5 ml-1">Password</label>
             <input
               type="password"
               required
@@ -77,7 +77,7 @@ export function Auth() {
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold text-[15px] py-3 rounded-lg transition-colors mt-2 disabled:bg-blue-800 disabled:text-gray-400"
           >
-            {loading ? 'Bekleniyor...' : (isLogin ? 'Giriş Yap' : 'Kayıt Ol')}
+            {loading ? 'Please wait...' : (isLogin ? 'Log In' : 'Sign Up')}
           </button>
         </form>
 
@@ -87,7 +87,7 @@ export function Auth() {
             onClick={() => setIsLogin(!isLogin)}
             className="text-[15px] text-gray-400 hover:text-white transition-colors"
           >
-            {isLogin ? "Hesabınız yok mu? Hemen kayıt olun." : "Zaten hesabınız var mı? Giriş yapın."}
+            {isLogin ? "Don't have an account? Sign up now." : "Already have an account? Log in."}
           </button>
         </div>
       </div>

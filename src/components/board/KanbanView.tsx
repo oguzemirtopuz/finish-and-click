@@ -22,7 +22,7 @@ export function KanbanView() {
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   )
 
-  // Sadece ana görevler (parent_id = null)
+  // Only root tasks (parent_id = null)
   const rootTasks = tasks.filter((t) => t.parent_id === null)
 
   function tasksByStatus(status: string) {
@@ -41,7 +41,7 @@ export function KanbanView() {
     const task = tasks.find((t) => t.id === active.id)
     if (!task) return
 
-    // over.id bir sütun id'si (status adı) veya başka kart id'si
+    // over.id is a column id (status name) or another card id
     const newStatus = COLUMNS.includes(over.id as StatusKey)
       ? (over.id as StatusKey)
       : tasks.find((t) => t.id === over.id)?.status
@@ -67,7 +67,7 @@ export function KanbanView() {
               strategy={verticalListSortingStrategy}
             >
               <div className="flex flex-col w-64 flex-shrink-0">
-                {/* Sütun başlığı */}
+                {/* Column header */}
                 <div className="flex items-center gap-2 mb-3 px-1">
                   <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: cfg.bg }} />
                   <span className="text-[13px] font-bold text-gray-200">{cfg.label}</span>
@@ -79,7 +79,7 @@ export function KanbanView() {
                   </span>
                 </div>
 
-                {/* Sürükle-bırak alan */}
+                {/* Drag-drop area */}
                 <div
                   id={col}
                   className="flex flex-col gap-2 min-h-[80px] p-2 rounded-xl bg-[#20263c] border-2 border-dashed border-transparent transition-colors"
@@ -91,15 +91,15 @@ export function KanbanView() {
 
                   {colTasks.length === 0 && (
                     <div className="flex items-center justify-center h-16 text-xs text-gray-400 italic">
-                      Görev yok
+                      No tasks
                     </div>
                   )}
                 </div>
 
-                {/* + Ekle */}
+                {/* + Add */}
                 <button className="flex items-center gap-1.5 mt-2 px-2 py-1.5 text-xs text-gray-500 hover:text-white hover:bg-[#20263c] rounded-lg transition-colors w-full">
                   <Plus size={12} />
-                  Görev ekle
+                  Add task
                 </button>
               </div>
             </SortableContext>
