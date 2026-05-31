@@ -119,4 +119,4 @@ This project is pre-configured to be deployed on Netlify with a single click.
 ---
 
 ## 🛡️ License
-This project is open-source. Please check the repository for further licensing details.
+This project is licensed under the **MIT License**. See the [LICENSE](./LICENSE) file for details.
