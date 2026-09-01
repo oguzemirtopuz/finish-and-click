@@ -327,7 +327,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
       )}>
         {/* Yapışkan sol kısım — yatay kaydırmada görev adı sabit kalır */}
         <div className={cn(
-          'sticky left-0 z-10 flex items-stretch',
+          'md:sticky md:left-0 md:z-10 flex items-stretch',
           'bg-[#0F111A] group-hover/row:bg-[#1D1F2B]',
           expanded && 'bg-[#131520]',
           isOver && 'bg-blue-500/10'
@@ -501,7 +501,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
           </div>
 
           {/* Yapışkan alanın sağ gölgesi */}
-          <div className="absolute right-0 top-0 bottom-0 w-2 bg-gradient-to-r from-transparent to-black/20 translate-x-full pointer-events-none" />
+          <div className="hidden md:block absolute right-0 top-0 bottom-0 w-2 bg-gradient-to-r from-transparent to-black/20 translate-x-full pointer-events-none" />
         </div>
 
         {visibleCols.filter((c) => c.id !== 'title').map((col) => (

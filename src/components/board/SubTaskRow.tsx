@@ -158,7 +158,7 @@ export function SubTaskRow({ task, isLast }: Props) {
     <div ref={setNodeRef} style={style} {...attributes}>
       <div className="flex items-stretch border-b border-[#1D1F2B] bg-[#0F111A] hover:bg-[#1D1F2B] transition-colors group/subtask relative">
         {/* Yapışkan sol kısım — yatay kaydırmada alt görev adı sabit kalır */}
-        <div className="sticky left-0 z-10 flex items-stretch bg-[#0F111A] group-hover/subtask:bg-[#1D1F2B]">
+        <div className="md:sticky md:left-0 md:z-10 flex items-stretch bg-[#0F111A] group-hover/subtask:bg-[#1D1F2B]">
           {/* Stripe */}
           <div style={{ width: STRIPE_W }} className="shrink-0 bg-transparent" />
 
@@ -302,7 +302,7 @@ export function SubTaskRow({ task, isLast }: Props) {
           </div>
 
           {/* Yapışkan alanın sağ gölgesi */}
-          <div className="absolute right-0 top-0 bottom-0 w-2 bg-gradient-to-r from-transparent to-black/20 translate-x-full pointer-events-none" />
+          <div className="hidden md:block absolute right-0 top-0 bottom-0 w-2 bg-gradient-to-r from-transparent to-black/20 translate-x-full pointer-events-none" />
         </div>
 
         {columns.filter((c) => c.visible && c.id !== 'title').map((col) => {

@@ -241,8 +241,8 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
                        border-b border-[#1D1F2B] bg-[#1D1F2B] rounded-t-md select-none group/header hover:bg-[#242636] transition-colors
                        sticky top-0 z-30 shadow-sm"
           >
-            {/* Yapışkan sol kısım — yatay kaydırmada sabit kalır */}
-            <div className="sticky left-0 z-10 flex items-stretch bg-[#1D1F2B] rounded-tl-md">
+            {/* Yapışkan sol kısım — masaüstünde yatay kaydırmada sabit kalır */}
+            <div className="md:sticky md:left-0 md:z-10 flex items-stretch bg-[#1D1F2B] rounded-tl-md">
               <div style={{ width: STRIPE_W, background: group.color }} className="shrink-0 self-stretch rounded-tl-md" />
               <div style={{ width: GRIP_W }} className="shrink-0" />
               <div style={{ width: CHECKBOX_W }} className="shrink-0" />
@@ -266,7 +266,7 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
                 </div>
               )}
               {/* Yapışkan alanın sağ gölgesi */}
-              <div className="absolute right-0 top-0 bottom-0 w-2 bg-gradient-to-r from-transparent to-black/20 translate-x-full pointer-events-none" />
+              <div className="hidden md:block absolute right-0 top-0 bottom-0 w-2 bg-gradient-to-r from-transparent to-black/20 translate-x-full pointer-events-none" />
             </div>
             {visibleCols.filter((c) => c.id !== 'title').map((col) => (
               <div
@@ -319,7 +319,7 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
           {/* + Add task */}
           <div className="border-t border-[#1D1F2B] rounded-b-md overflow-hidden bg-[#0F111A] flex items-stretch">
             {/* Yapışkan sol kısım */}
-            <div className="sticky left-0 z-10 flex items-stretch bg-[#0F111A] rounded-bl-md">
+            <div className="md:sticky md:left-0 md:z-10 flex items-stretch bg-[#0F111A] rounded-bl-md">
               <div style={{ width: STRIPE_W, background: `${group.color}30` }} className="shrink-0 self-stretch" />
               <div style={{ width: GRIP_W }} className="shrink-0" />
               <div style={{ width: CHECKBOX_W }} className="shrink-0" />

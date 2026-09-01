@@ -30,7 +30,7 @@ export function SummaryRow({ tasks, columns, groupColor }: Props) {
       className="flex items-stretch border-t border-[#1D1F2B] bg-[#0F111A] text-[11px] text-[#808191] font-medium rounded-b-md"
     >
       {/* Yapışkan sol kısım */}
-      <div className="sticky left-0 z-10 flex items-stretch bg-[#0F111A]">
+      <div className="md:sticky md:left-0 md:z-10 flex items-stretch bg-[#0F111A]">
         {/* Sol renkli şerit — başlık/satır ile aynı */}
         <div style={{ width: STRIPE_W, background: `${groupColor}40` }} className="shrink-0 self-stretch" />
         {/* Tutamaç boşluğu — hizalama için */}
