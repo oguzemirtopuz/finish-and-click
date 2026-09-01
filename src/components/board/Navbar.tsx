@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
-import { UserPlus, Plus, MoreHorizontal, LogOut, Pencil, Trash2 } from 'lucide-react'
+import { UserPlus, Plus, MoreHorizontal, LogOut, Pencil, Trash2, Menu } from 'lucide-react'
 import { DropdownPortal } from '../ui/DropdownPortal'
 import { InviteModal } from './InviteModal'
 import { supabase, updateWorkspace, deleteWorkspace } from '../../lib/supabase'
 import { useBoardStore } from '../../lib/store'
 
 export function Navbar() {
-  const { workspaces, activeWorkspaceId, setActiveWorkspace } = useBoardStore()
+  const { workspaces, activeWorkspaceId, setActiveWorkspace, setMobileSidebarOpen } = useBoardStore()
   const activeWorkspace = workspaces.find((ws) => ws.id === activeWorkspaceId)
   const [inviteModalOpen, setInviteModalOpen] = useState(false)
   const [userEmail, setUserEmail] = useState<string>('')
@@ -68,16 +68,24 @@ export function Navbar() {
   }
 
   return (
-    <header className="shrink-0 bg-[#181b34] border-b border-[#3b4266] pt-4 px-6 pb-4 md:pt-6 md:pb-0">
-      {/* Title row */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2 md:mb-6">
-        <div className="flex items-center gap-4">
+    <header className="shrink-0 bg-[#181b34] border-b border-[#3b4266] py-3 px-3 md:pt-6 md:pb-0 md:px-6">
+      {/* Başlık satırı — mobilde tek satır, taşma yok */}
+      <div className="flex items-center justify-between gap-2 md:gap-4 md:mb-6">
+        <div className="flex items-center gap-2 md:gap-4 min-w-0">
+          {/* Mobil hamburger menü butonu */}
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="md:hidden flex items-center justify-center w-10 h-10 shrink-0 rounded-lg hover:bg-white/10 text-[#a9abcd] cursor-pointer"
+            aria-label="Menüyü aç"
+          >
+            <Menu size={22} />
+          </button>
           {activeWorkspace ? (
             <>
-              <h1 className="text-xl md:text-3xl font-bold text-white leading-tight whitespace-nowrap">{activeWorkspace.name}</h1>
+              <h1 className="text-lg md:text-3xl font-bold text-white leading-tight truncate min-w-0">{activeWorkspace.name}</h1>
               <DropdownPortal
                 trigger={
-                  <button className="flex items-center justify-center p-1 rounded hover:bg-white/10 text-[#a9abcd] cursor-pointer" >
+                  <button className="flex items-center justify-center w-8 h-8 shrink-0 rounded hover:bg-white/10 text-[#a9abcd] cursor-pointer" >
                     <MoreHorizontal size={18} />
                   </button>
                 }
@@ -96,31 +104,33 @@ export function Navbar() {
               </DropdownPortal>
             </>
           ) : (
-            <h1 className="text-xl md:text-3xl font-bold text-white whitespace-nowrap">New Custom Board</h1>
+            <h1 className="text-lg md:text-3xl font-bold text-white truncate min-w-0">New Custom Board</h1>
           )}
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-x-4 ml-auto pb-2 md:pb-0">
+        {/* Aksiyonlar — mobilde kompakt ikon butonlar */}
+        <div className="flex items-center gap-2 md:gap-4 shrink-0">
           {activeWorkspace && (
             <button
               onClick={() => setInviteModalOpen(true)}
-              className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-transparent border border-[#3b4266] rounded cursor-pointer transition-colors hover:bg-[#323956]"
+              className="flex items-center justify-center gap-2 w-10 h-10 md:w-auto md:h-auto md:px-4 md:py-2 text-sm font-medium text-white bg-transparent border border-[#3b4266] rounded-lg md:rounded cursor-pointer transition-colors hover:bg-[#323956]"
             >
-              <UserPlus size={16} /> Invite
+              <UserPlus size={18} className="md:w-4 md:h-4" />
+              <span className="hidden md:inline">Invite</span>
             </button>
           )}
           <button
             onClick={handleCreateWorkspace}
-            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-[#579bfc] hover:bg-[#3b82f6] border-none rounded cursor-pointer transition-colors whitespace-nowrap"
+            className="flex items-center justify-center gap-2 w-10 h-10 md:w-auto md:h-auto md:px-4 md:py-2 text-sm font-medium text-white bg-[#579bfc] hover:bg-[#3b82f6] border-none rounded-lg md:rounded cursor-pointer transition-colors whitespace-nowrap"
           >
-            <Plus size={16} /> New Board
+            <Plus size={18} className="md:w-4 md:h-4" />
+            <span className="hidden md:inline">New Board</span>
           </button>
 
-          {/* Avatar */}
+          {/* Avatar — dokunmatik dostu boyut */}
           <DropdownPortal
             trigger={
-              <div className="shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#6366f1] flex items-center justify-center text-white text-sm sm:text-base font-bold cursor-pointer">
+              <div className="shrink-0 w-10 h-10 md:w-9 md:h-9 rounded-full bg-[#6366f1] flex items-center justify-center text-white text-sm font-bold cursor-pointer">
                 {userEmail.charAt(0).toUpperCase()}
               </div>
             }

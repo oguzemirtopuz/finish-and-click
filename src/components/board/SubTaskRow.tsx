@@ -157,146 +157,152 @@ export function SubTaskRow({ task, isLast }: Props) {
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
       <div className="flex items-stretch border-b border-[#1D1F2B] bg-[#0F111A] hover:bg-[#1D1F2B] transition-colors group/subtask relative">
-        {/* Stripe */}
-        <div style={{ width: STRIPE_W }} className="shrink-0 bg-transparent" />
+        {/* Yapışkan sol kısım — yatay kaydırmada alt görev adı sabit kalır */}
+        <div className="sticky left-0 z-10 flex items-stretch bg-[#0F111A] group-hover/subtask:bg-[#1D1F2B]">
+          {/* Stripe */}
+          <div style={{ width: STRIPE_W }} className="shrink-0 bg-transparent" />
 
-        {/* Drag Handle */}
-        <div 
-          {...listeners}
-          style={{ width: GRIP_W }}
-          className="flex items-center justify-center shrink-0 cursor-grab active:cursor-grabbing text-gray-600 hover:text-blue-500 transition-colors group-hover/subtask:opacity-100 opacity-20"
-        >
-          <GripVertical size={14} />
-        </div>
-
-        {/* Left connector line + checkbox */}
-        <div className="relative shrink-0" style={{ width: CHECKBOX_W }}>
-          <div className="absolute left-[50%] top-0 w-px bg-[#1D1F2B]" style={{ height: isLast ? '50%' : '100%' }} />
-          <div className="absolute left-[50%] top-[50%] h-px bg-[#1D1F2B]" style={{ width: '50%' }} />
-          <div className="absolute inset-0 flex items-center justify-end pr-1">
-            <input
-              type="checkbox"
-              className="accent-blue-600 cursor-pointer w-3 h-3"
-              checked={task.status === 'done'}
-              onChange={() => update('status', task.status === 'done' ? 'todo' : 'done')}
-            />
+          {/* Drag Handle */}
+          <div 
+            {...listeners}
+            style={{ width: GRIP_W }}
+            className="flex items-center justify-center shrink-0 cursor-grab active:cursor-grabbing text-gray-600 hover:text-blue-500 transition-colors group-hover/subtask:opacity-100 opacity-20"
+          >
+            <GripVertical size={14} />
           </div>
-        </div>
 
-        {/* Title */}
-        <div className="flex items-center gap-2 shrink-0 px-4 py-3 border-r-[1px] border-solid border-gray-600 min-w-0 overflow-hidden" style={{ width: titleWidth }}>
-          {editingTitle ? (
-            <input
-              autoFocus value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onBlur={commitTitle}
-              onKeyDown={(e) => e.key === 'Enter' && commitTitle()}
-              maxLength={255}
-              className="flex-1 text-xs outline-none bg-transparent border-b border-blue-400 py-0.5"
-            />
-          ) : (
-            <span
-              onDoubleClick={() => setEditingTitle(true)}
-              onClick={() => setSelectedTaskId(task.id)}
-              className="flex-1 text-xs text-gray-400 truncate cursor-pointer hover:text-blue-400 transition-colors group-hover/subtask:text-white"
-              style={{ textDecoration: task.status === 'done' ? 'line-through' : 'none' }}
-            >
-              {task.title}
-            </span>
-          )}
-          <button
-            onClick={handleDelete}
-            className="shrink-0 text-gray-300 hover:text-red-500 opacity-0 group-hover/subtask:opacity-100 transition-all ml-auto"
-            title="Delete Subtask"
-          >
-            <Trash2 size={11} />
-          </button>
+          {/* Left connector line + checkbox */}
+          <div className="relative shrink-0" style={{ width: CHECKBOX_W }}>
+            <div className="absolute left-[50%] top-0 w-px bg-[#1D1F2B]" style={{ height: isLast ? '50%' : '100%' }} />
+            <div className="absolute left-[50%] top-[50%] h-px bg-[#1D1F2B]" style={{ width: '50%' }} />
+            <div className="absolute inset-0 flex items-center justify-end pr-1">
+              <input
+                type="checkbox"
+                className="accent-blue-600 cursor-pointer w-3 h-3"
+                checked={task.status === 'done'}
+                onChange={() => update('status', task.status === 'done' ? 'todo' : 'done')}
+              />
+            </div>
+          </div>
 
-          <DropdownPortal
-            trigger={
-              <button
-                disabled={isMoving}
-                className={cn(
-                  "shrink-0 ml-1 text-gray-400 hover:text-blue-400 opacity-0 group-hover/subtask:opacity-100 transition-all",
-                  isMoving && "animate-pulse"
-                )}
-                title="Move to Group/Workspace"
+          {/* Title */}
+          <div className="flex items-center gap-2 shrink-0 px-4 py-3 border-r-[1px] border-solid border-gray-600 min-w-0 overflow-hidden" style={{ width: titleWidth }}>
+            {editingTitle ? (
+              <input
+                autoFocus value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onBlur={commitTitle}
+                onKeyDown={(e) => e.key === 'Enter' && commitTitle()}
+                maxLength={255}
+                className="flex-1 text-xs outline-none bg-transparent border-b border-blue-400 py-0.5"
+              />
+            ) : (
+              <span
+                onDoubleClick={() => setEditingTitle(true)}
+                onClick={() => setSelectedTaskId(task.id)}
+                className="flex-1 text-xs text-gray-400 truncate cursor-pointer hover:text-blue-400 transition-colors group-hover/subtask:text-white"
+                style={{ textDecoration: task.status === 'done' ? 'line-through' : 'none' }}
               >
-                <ExternalLink size={11} />
-              </button>
-            }
-            width={220}
-          >
-            <div className="max-h-64 overflow-y-auto">
-              <div className="p-2 border-b border-gray-100/10 bg-[#1A1F36]">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Move to which group?</span>
-              </div>
-              <div className="py-1">
-                {allGroups.length === 0 && otherWorkspaces.length === 0 && (
-                  <div className="px-3 py-2 text-[11px] text-gray-500 italic">No other target found.</div>
-                )}
-                {allGroups.map(g => (
-                  <button
-                    key={g.id}
-                    onMouseDown={(e) => { e.preventDefault(); handleMoveToGroup(g.id) }}
-                    className="w-full flex items-center justify-between px-3 py-2 text-xs text-gray-300 hover:bg-[#20263c] hover:text-white transition-colors text-left"
-                  >
-                    <span className="truncate pr-2">↳ {g.name}</span>
-                  </button>
-                ))}
+                {task.title}
+              </span>
+            )}
+            <button
+              onClick={handleDelete}
+              className="shrink-0 text-gray-300 hover:text-red-500 opacity-0 group-hover/subtask:opacity-100 transition-all ml-auto"
+              title="Delete Subtask"
+            >
+              <Trash2 size={11} />
+            </button>
 
-                {/* Root Tasks (Potential Parents) */}
-                <div className="px-2 py-1 mt-1 border-t border-gray-100/10 bg-[#1A1F36]">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Under which task?</span>
+            <DropdownPortal
+              trigger={
+                <button
+                  disabled={isMoving}
+                  className={cn(
+                    "shrink-0 ml-1 text-gray-400 hover:text-blue-400 opacity-0 group-hover/subtask:opacity-100 transition-all",
+                    isMoving && "animate-pulse"
+                  )}
+                  title="Move to Group/Workspace"
+                >
+                  <ExternalLink size={11} />
+                </button>
+              }
+              width={220}
+            >
+              <div className="max-h-64 overflow-y-auto">
+                <div className="p-2 border-b border-gray-100/10 bg-[#1A1F36]">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Move to which group?</span>
                 </div>
-                {groups.map(g => {
-                  const groupTasks = tasks.filter(t => t.group_id === g.id && !t.parent_id)
-                  if (groupTasks.length === 0) return null
-                  return (
-                    <div key={g.id}>
-                      <div className="px-3 py-1 text-[9px] text-gray-500 font-medium bg-black/20 uppercase tracking-tight">{g.name}</div>
-                      {groupTasks.map(gt => (
+                <div className="py-1">
+                  {allGroups.length === 0 && otherWorkspaces.length === 0 && (
+                    <div className="px-3 py-2 text-[11px] text-gray-500 italic">No other target found.</div>
+                  )}
+                  {allGroups.map(g => (
+                    <button
+                      key={g.id}
+                      onMouseDown={(e) => { e.preventDefault(); handleMoveToGroup(g.id) }}
+                      className="w-full flex items-center justify-between px-3 py-2 text-xs text-gray-300 hover:bg-[#20263c] hover:text-white transition-colors text-left"
+                    >
+                      <span className="truncate pr-2">↳ {g.name}</span>
+                    </button>
+                  ))}
+
+                  {/* Root Tasks (Potential Parents) */}
+                  <div className="px-2 py-1 mt-1 border-t border-gray-100/10 bg-[#1A1F36]">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Under which task?</span>
+                  </div>
+                  {groups.map(g => {
+                    const groupTasks = tasks.filter(t => t.group_id === g.id && !t.parent_id)
+                    if (groupTasks.length === 0) return null
+                    return (
+                      <div key={g.id}>
+                        <div className="px-3 py-1 text-[9px] text-gray-500 font-medium bg-black/20 uppercase tracking-tight">{g.name}</div>
+                        {groupTasks.map(gt => (
+                          <button
+                            key={gt.id}
+                            disabled={gt.id === task.parent_id}
+                            onMouseDown={(e) => { e.preventDefault(); handleMoveToParent(gt.id) }}
+                            className={cn(
+                              "w-full flex items-center justify-between px-4 py-1.5 text-[11px] transition-colors text-left",
+                              gt.id === task.parent_id 
+                                ? "text-blue-400 bg-blue-500/5 cursor-default" 
+                                : "text-gray-300 hover:bg-[#20263c] hover:text-white"
+                            )}
+                          >
+                            <span className="truncate">→ {gt.title}</span>
+                            {gt.id === task.parent_id && <span className="text-[8px] bg-blue-500/20 px-1 rounded">Current</span>}
+                          </button>
+                        ))}
+                      </div>
+                    )
+                  })}
+
+                  {otherWorkspaces.length > 0 && (
+                    <>
+                      <div className="px-2 py-1 mt-1 border-t border-gray-100/10 bg-[#1A1F36]">
+                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Other Workspaces</span>
+                      </div>
+                      {otherWorkspaces.map(ws => (
                         <button
-                          key={gt.id}
-                          disabled={gt.id === task.parent_id}
-                          onMouseDown={(e) => { e.preventDefault(); handleMoveToParent(gt.id) }}
-                          className={cn(
-                            "w-full flex items-center justify-between px-4 py-1.5 text-[11px] transition-colors text-left",
-                            gt.id === task.parent_id 
-                              ? "text-blue-400 bg-blue-500/5 cursor-default" 
-                              : "text-gray-300 hover:bg-[#20263c] hover:text-white"
-                          )}
+                          key={ws.id}
+                          onMouseDown={(e) => { e.preventDefault(); handleMoveToWorkspace(ws.id) }}
+                          className="w-full flex items-center justify-between px-3 py-2 text-xs text-gray-300 hover:bg-[#20263c] hover:text-white transition-colors text-left"
                         >
-                          <span className="truncate">→ {gt.title}</span>
-                          {gt.id === task.parent_id && <span className="text-[8px] bg-blue-500/20 px-1 rounded">Current</span>}
+                          <span className="truncate pr-2">{ws.name}</span>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100/10 text-gray-400 font-medium shrink-0">
+                            {ws.type === 'personal' ? 'Personal' : 'Shared'}
+                          </span>
                         </button>
                       ))}
-                    </div>
-                  )
-                })}
-
-                {otherWorkspaces.length > 0 && (
-                  <>
-                    <div className="px-2 py-1 mt-1 border-t border-gray-100/10 bg-[#1A1F36]">
-                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Other Workspaces</span>
-                    </div>
-                    {otherWorkspaces.map(ws => (
-                      <button
-                        key={ws.id}
-                        onMouseDown={(e) => { e.preventDefault(); handleMoveToWorkspace(ws.id) }}
-                        className="w-full flex items-center justify-between px-3 py-2 text-xs text-gray-300 hover:bg-[#20263c] hover:text-white transition-colors text-left"
-                      >
-                        <span className="truncate pr-2">{ws.name}</span>
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100/10 text-gray-400 font-medium shrink-0">
-                          {ws.type === 'personal' ? 'Personal' : 'Shared'}
-                        </span>
-                      </button>
-                    ))}
-                  </>
-                )}
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          </DropdownPortal>
+            </DropdownPortal>
+          </div>
+
+          {/* Yapışkan alanın sağ gölgesi */}
+          <div className="absolute right-0 top-0 bottom-0 w-2 bg-gradient-to-r from-transparent to-black/20 translate-x-full pointer-events-none" />
         </div>
 
         {columns.filter((c) => c.visible && c.id !== 'title').map((col) => {

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import {
-  DndContext, DragOverlay, PointerSensor, useSensor, useSensors,
+  DndContext, DragOverlay, PointerSensor, TouchSensor, useSensor, useSensors,
   type DragEndEvent, type DragStartEvent,
 } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
@@ -19,7 +19,8 @@ export function KanbanView() {
   const [activeTask, setActiveTask] = useState<Task | null>(null)
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
   )
 
   // Only root tasks (parent_id = null)
@@ -54,7 +55,7 @@ export function KanbanView() {
 
   return (
     <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
-      <div className="flex gap-4 p-6 h-full overflow-x-auto items-start">
+      <div className="flex gap-4 p-4 md:p-6 h-full overflow-x-auto items-start snap-x snap-mandatory custom-scrollbar">
         {COLUMNS.map((col) => {
           const cfg = STATUS_CONFIG[col]
           const colTasks = tasksByStatus(col)
@@ -66,7 +67,7 @@ export function KanbanView() {
               items={colTasks.map((t) => t.id)}
               strategy={verticalListSortingStrategy}
             >
-              <div className="flex flex-col w-64 flex-shrink-0">
+              <div className="flex flex-col w-[85vw] md:w-64 flex-shrink-0 snap-center md:snap-align-none">
                 {/* Column header */}
                 <div className="flex items-center gap-2 mb-3 px-1">
                   <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: cfg.bg }} />

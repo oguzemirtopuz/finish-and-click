@@ -5,7 +5,7 @@ import { cn } from '../../lib/utils'
 import { toast } from 'sonner'
 
 export function Sidebar() {
-  const { workspaces, activeWorkspaceId, setActiveWorkspace } = useBoardStore()
+  const { workspaces, activeWorkspaceId, setActiveWorkspace, setMobileSidebarOpen } = useBoardStore()
 
   async function handleCreateWorkspace() {
     const name = window.prompt('Enter the name of the new workspace:')
@@ -93,7 +93,7 @@ export function Sidebar() {
           ].map(({ icon, label, onClick }) => (
             <button
               key={label}
-              onClick={onClick}
+              onClick={() => { onClick(); setMobileSidebarOpen(false) }}
               style={{ padding: '8px 12px', gap: 12, color: '#a9abcd', fontSize: 14, fontWeight: 500, width: '100%', display: 'flex', alignItems: 'center', borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', transition: 'all .2s', whiteSpace: 'nowrap' }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#323956'; (e.currentTarget as HTMLElement).style.color = '#fff' }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; (e.currentTarget as HTMLElement).style.color = '#a9abcd' }}
@@ -125,7 +125,7 @@ export function Sidebar() {
           {personalWorkspaces.map(ws => (
             <button
               key={ws.id}
-              onClick={() => setActiveWorkspace(ws.id)}
+              onClick={() => { setActiveWorkspace(ws.id); setMobileSidebarOpen(false) }}
               className={cn('w-full text-left')}
               style={{
                 padding: '7px 12px', gap: 10, fontSize: 14, fontWeight: 500,
@@ -146,7 +146,7 @@ export function Sidebar() {
           {sharedWorkspaces.map(ws => (
             <button
               key={ws.id}
-              onClick={() => setActiveWorkspace(ws.id)}
+              onClick={() => { setActiveWorkspace(ws.id); setMobileSidebarOpen(false) }}
               className={cn('w-full text-left')}
               style={{
                 padding: '7px 12px', gap: 10, fontSize: 14, fontWeight: 500,

@@ -11,6 +11,7 @@ import {
   closestCorners,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -27,10 +28,17 @@ export function BoardView() {
   const [search, setSearch] = useState('')
   const [activeId, setActiveId] = useState<string | null>(null)
 
+  // Dokunmatik cihazlarda kaydırma ile sürüklemeyi ayırt etmek için gecikme eklendi
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5,
+        distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
       },
     }),
     useSensor(KeyboardSensor, {

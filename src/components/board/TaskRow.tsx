@@ -325,172 +325,183 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
         expanded && 'bg-[#131520]',
         isOver && 'ring-2 ring-blue-500 ring-inset bg-blue-500/10'
       )}>
-        {/* Color stripe */}
-        <div
-          className="shrink-0 transition-opacity"
-          style={{ width: STRIPE_W, background: groupColor, opacity: expanded ? 1 : 0 }}
-        />
-
-        {/* Drag Handle */}
-        <div 
-          {...listeners}
-          style={{ width: GRIP_W }}
-          className="flex items-center justify-center shrink-0 cursor-grab active:cursor-grabbing text-gray-600 hover:text-blue-500 transition-colors group-hover/row:opacity-100 opacity-30"
-        >
-          <GripVertical size={16} />
-        </div>
-
-        {/* Checkbox */}
-        <div className="flex items-center justify-center shrink-0" style={{ width: CHECKBOX_W }}>
-          <input
-            type="checkbox"
-            className="accent-blue-600 cursor-pointer opacity-0 group-hover/row:opacity-100 transition-opacity"
+        {/* Yapışkan sol kısım — yatay kaydırmada görev adı sabit kalır */}
+        <div className={cn(
+          'sticky left-0 z-10 flex items-stretch',
+          'bg-[#0F111A] group-hover/row:bg-[#1D1F2B]',
+          expanded && 'bg-[#131520]',
+          isOver && 'bg-blue-500/10'
+        )}>
+          {/* Color stripe */}
+          <div
+            className="shrink-0 transition-opacity"
+            style={{ width: STRIPE_W, background: groupColor, opacity: expanded ? 1 : 0 }}
           />
-        </div>
 
-        <div
-          className="flex items-center gap-2 shrink-0 px-4 py-3 border-r-[1px] border-solid border-gray-600 min-w-0 overflow-hidden"
-          style={{ width: visibleCols.find((c) => c.id === 'title')?.width ?? 300 }}
-        >
-          <button
-            onClick={() => setExpanded((v) => !v)}
-            className="p-0.5 rounded hover:bg-white/80 shrink-0 transition-all"
+          {/* Drag Handle */}
+          <div 
+            {...listeners}
+            style={{ width: GRIP_W }}
+            className="flex items-center justify-center shrink-0 cursor-grab active:cursor-grabbing text-gray-600 hover:text-blue-500 transition-colors group-hover/row:opacity-100 opacity-30"
           >
-            <ChevronRight size={13} className={cn('text-gray-400 transition-transform', expanded && 'rotate-90')} />
-          </button>
+            <GripVertical size={16} />
+          </div>
 
-          {editingTitle ? (
+          {/* Checkbox */}
+          <div className="flex items-center justify-center shrink-0" style={{ width: CHECKBOX_W }}>
             <input
-              autoFocus value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onBlur={commitTitle}
-              onKeyDown={(e) => e.key === 'Enter' && commitTitle()}
-              maxLength={255}
-              className="flex-1 outline-none text-sm bg-[#1A1F36] text-white border border-blue-500 rounded px-2 py-0.5 shadow-sm"
+              type="checkbox"
+              className="accent-blue-600 cursor-pointer opacity-0 group-hover/row:opacity-100 transition-opacity"
             />
-          ) : (
-            <span
-              onDoubleClick={() => setEditingTitle(true)}
-              onClick={() => setSelectedTaskId(task.id)}
-              className="flex-1 text-sm text-gray-200 truncate font-medium cursor-pointer hover:text-blue-400 transition-colors"
-            >
-              {task.title}
-            </span>
-          )}
+          </div>
 
-          <button
-            onClick={() => setEditingTitle(true)}
-            className="shrink-0 text-gray-300 hover:text-blue-500 opacity-0 group-hover/row:opacity-100 transition-all"
+          <div
+            className="flex items-center gap-2 shrink-0 px-4 py-3 border-r-[1px] border-solid border-gray-600 min-w-0 overflow-hidden"
+            style={{ width: visibleCols.find((c) => c.id === 'title')?.width ?? 300 }}
           >
-            <Pencil size={11} />
-          </button>
-
-          {hasNote && (
-            <button
-              onClick={() => setSelectedTaskId(task.id)}
-              className="shrink-0 text-blue-400 hover:text-blue-300 transition-all opacity-60 hover:opacity-100"
-              title="Has Note/Comment"
-            >
-              <MessageSquare size={11} fill="currentColor" />
-            </button>
-          )}
-
-          <button
-            onClick={handleDelete}
-            className="shrink-0 text-gray-300 hover:text-red-500 opacity-20 group-hover/row:opacity-100 transition-all"
-            title="Delete Task"
-          >
-            <Trash2 size={11} />
-          </button>
-
-          <DropdownPortal
-            trigger={
-              <button
-                disabled={isMoving}
-                className={cn(
-                  "shrink-0 text-gray-400 hover:text-blue-400 opacity-0 group-hover/row:opacity-100 transition-all",
-                  isMoving && "animate-pulse"
-                )}
-                title="Move to Group/Workspace"
-              >
-                <ExternalLink size={11} />
-              </button>
-            }
-            width={220}
-          >
-            <div className="max-h-64 overflow-y-auto">
-              <div className="p-2 border-b border-gray-100/10 bg-[#1A1F36]">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Move to which group?</span>
-              </div>
-              <div className="py-1">
-                {otherGroups.length === 0 && otherWorkspaces.length === 0 && (
-                  <div className="px-3 py-2 text-[11px] text-gray-500 italic">No other target found.</div>
-                )}
-                {otherGroups.map(g => (
-                  <button
-                    key={g.id}
-                    onMouseDown={(e) => { e.preventDefault(); handleMoveToGroup(g.id) }}
-                    className="w-full flex items-center justify-between px-3 py-2 text-xs text-gray-300 hover:bg-[#20263c] hover:text-white transition-colors text-left"
-                  >
-                    <span className="truncate pr-2">↳ {g.name}</span>
-                  </button>
-                ))}
-
-                {/* Root Tasks (Potential Parents) */}
-                <div className="px-2 py-1 mt-1 border-t border-gray-100/10 bg-[#1A1F36]">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Under which task?</span>
-                </div>
-                {groups.map(g => {
-                  const groupTasks = tasks.filter(t => t.group_id === g.id && !t.parent_id && t.id !== task.id)
-                  if (groupTasks.length === 0) return null
-                  return (
-                    <div key={g.id}>
-                      <div className="px-3 py-1 text-[9px] text-gray-500 font-medium bg-black/20 uppercase tracking-tight">{g.name}</div>
-                      {groupTasks.map(gt => (
-                        <button
-                          key={gt.id}
-                          onMouseDown={(e) => { e.preventDefault(); handleMoveToParent(gt.id) }}
-                          className="w-full flex items-center justify-between px-4 py-1.5 text-[11px] text-gray-300 hover:bg-[#20263c] hover:text-white transition-colors text-left"
-                        >
-                          <span className="truncate">→ {gt.title}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )
-                })}
-
-                {otherWorkspaces.length > 0 && (
-                  <>
-                    <div className="px-2 py-1 mt-1 border-t border-gray-100/10 bg-[#1A1F36]">
-                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Other Workspaces</span>
-                    </div>
-                    {otherWorkspaces.map(ws => (
-                      <button
-                        key={ws.id}
-                        onMouseDown={(e) => { e.preventDefault(); handleMoveToWorkspace(ws.id) }}
-                        className="w-full flex items-center justify-between px-3 py-2 text-xs text-gray-300 hover:bg-[#20263c] hover:text-white transition-colors text-left"
-                      >
-                        <span className="truncate pr-2">{ws.name}</span>
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100/10 text-gray-400 font-medium shrink-0">
-                          {ws.type === 'personal' ? 'Personal' : 'Shared'}
-                        </span>
-                      </button>
-                    ))}
-                  </>
-                )}
-              </div>
-            </div>
-          </DropdownPortal>
-
-          {hasSubtasks && (
             <button
               onClick={() => setExpanded((v) => !v)}
-              className="shrink-0 text-[10px] font-bold text-white px-1.5 py-0.5 rounded-full leading-none"
-              style={{ background: groupColor }}
+              className="p-0.5 rounded hover:bg-white/80 shrink-0 transition-all"
             >
-              {subtasks.length}
+              <ChevronRight size={13} className={cn('text-gray-400 transition-transform', expanded && 'rotate-90')} />
             </button>
-          )}
+
+            {editingTitle ? (
+              <input
+                autoFocus value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onBlur={commitTitle}
+                onKeyDown={(e) => e.key === 'Enter' && commitTitle()}
+                maxLength={255}
+                className="flex-1 outline-none text-sm bg-[#1A1F36] text-white border border-blue-500 rounded px-2 py-0.5 shadow-sm"
+              />
+            ) : (
+              <span
+                onDoubleClick={() => setEditingTitle(true)}
+                onClick={() => setSelectedTaskId(task.id)}
+                className="flex-1 text-sm text-gray-200 truncate font-medium cursor-pointer hover:text-blue-400 transition-colors"
+              >
+                {task.title}
+              </span>
+            )}
+
+            <button
+              onClick={() => setEditingTitle(true)}
+              className="shrink-0 text-gray-300 hover:text-blue-500 opacity-0 group-hover/row:opacity-100 transition-all"
+            >
+              <Pencil size={11} />
+            </button>
+
+            {hasNote && (
+              <button
+                onClick={() => setSelectedTaskId(task.id)}
+                className="shrink-0 text-blue-400 hover:text-blue-300 transition-all opacity-60 hover:opacity-100"
+                title="Has Note/Comment"
+              >
+                <MessageSquare size={11} fill="currentColor" />
+              </button>
+            )}
+
+            <button
+              onClick={handleDelete}
+              className="shrink-0 text-gray-300 hover:text-red-500 opacity-20 group-hover/row:opacity-100 transition-all"
+              title="Delete Task"
+            >
+              <Trash2 size={11} />
+            </button>
+
+            <DropdownPortal
+              trigger={
+                <button
+                  disabled={isMoving}
+                  className={cn(
+                    "shrink-0 text-gray-400 hover:text-blue-400 opacity-0 group-hover/row:opacity-100 transition-all",
+                    isMoving && "animate-pulse"
+                  )}
+                  title="Move to Group/Workspace"
+                >
+                  <ExternalLink size={11} />
+                </button>
+              }
+              width={220}
+            >
+              <div className="max-h-64 overflow-y-auto">
+                <div className="p-2 border-b border-gray-100/10 bg-[#1A1F36]">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Move to which group?</span>
+                </div>
+                <div className="py-1">
+                  {otherGroups.length === 0 && otherWorkspaces.length === 0 && (
+                    <div className="px-3 py-2 text-[11px] text-gray-500 italic">No other target found.</div>
+                  )}
+                  {otherGroups.map(g => (
+                    <button
+                      key={g.id}
+                      onMouseDown={(e) => { e.preventDefault(); handleMoveToGroup(g.id) }}
+                      className="w-full flex items-center justify-between px-3 py-2 text-xs text-gray-300 hover:bg-[#20263c] hover:text-white transition-colors text-left"
+                    >
+                      <span className="truncate pr-2">↳ {g.name}</span>
+                    </button>
+                  ))}
+
+                  {/* Root Tasks (Potential Parents) */}
+                  <div className="px-2 py-1 mt-1 border-t border-gray-100/10 bg-[#1A1F36]">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Under which task?</span>
+                  </div>
+                  {groups.map(g => {
+                    const groupTasks = tasks.filter(t => t.group_id === g.id && !t.parent_id && t.id !== task.id)
+                    if (groupTasks.length === 0) return null
+                    return (
+                      <div key={g.id}>
+                        <div className="px-3 py-1 text-[9px] text-gray-500 font-medium bg-black/20 uppercase tracking-tight">{g.name}</div>
+                        {groupTasks.map(gt => (
+                          <button
+                            key={gt.id}
+                            onMouseDown={(e) => { e.preventDefault(); handleMoveToParent(gt.id) }}
+                            className="w-full flex items-center justify-between px-4 py-1.5 text-[11px] text-gray-300 hover:bg-[#20263c] hover:text-white transition-colors text-left"
+                          >
+                            <span className="truncate">→ {gt.title}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )
+                  })}
+
+                  {otherWorkspaces.length > 0 && (
+                    <>
+                      <div className="px-2 py-1 mt-1 border-t border-gray-100/10 bg-[#1A1F36]">
+                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Other Workspaces</span>
+                      </div>
+                      {otherWorkspaces.map(ws => (
+                        <button
+                          key={ws.id}
+                          onMouseDown={(e) => { e.preventDefault(); handleMoveToWorkspace(ws.id) }}
+                          className="w-full flex items-center justify-between px-3 py-2 text-xs text-gray-300 hover:bg-[#20263c] hover:text-white transition-colors text-left"
+                        >
+                          <span className="truncate pr-2">{ws.name}</span>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100/10 text-gray-400 font-medium shrink-0">
+                            {ws.type === 'personal' ? 'Personal' : 'Shared'}
+                          </span>
+                        </button>
+                      ))}
+                    </>
+                  )}
+                </div>
+              </div>
+            </DropdownPortal>
+
+            {hasSubtasks && (
+              <button
+                onClick={() => setExpanded((v) => !v)}
+                className="shrink-0 text-[10px] font-bold text-white px-1.5 py-0.5 rounded-full leading-none"
+                style={{ background: groupColor }}
+              >
+                {subtasks.length}
+              </button>
+            )}
+          </div>
+
+          {/* Yapışkan alanın sağ gölgesi */}
+          <div className="absolute right-0 top-0 bottom-0 w-2 bg-gradient-to-r from-transparent to-black/20 translate-x-full pointer-events-none" />
         </div>
 
         {visibleCols.filter((c) => c.id !== 'title').map((col) => (

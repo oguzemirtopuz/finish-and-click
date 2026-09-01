@@ -71,15 +71,27 @@ export function TaskDetailSidebar() {
         onClick={handleClose}
       />
 
-      {/* Sidebar Panel */}
+      {/* Panel — Mobilde tam ekran modal, masaüstünde sağdan kayan panel */}
       <div 
         className={cn(
-          "fixed right-0 top-0 h-screen w-[35%] min-w-[400px] max-w-[600px] bg-[#1C1F2B] border-l border-[#2D313E] shadow-2xl z-50 transform transition-transform duration-300 ease-out flex flex-col",
-          (selectedTaskId && !isClosing) ? "translate-x-0" : "translate-x-full"
+          "fixed z-50 bg-[#1C1F2B] shadow-2xl transform transition-all duration-300 ease-out flex flex-col",
+          // Mobil: tam ekran, alttan kayar
+          "inset-0 rounded-t-2xl md:rounded-none",
+          // Masaüstü: sağdan kayan panel
+          "md:inset-auto md:right-0 md:top-0 md:h-screen md:w-[35%] md:min-w-[400px] md:max-w-[600px] md:border-l md:border-[#2D313E]",
+          // Animasyon durumu
+          (selectedTaskId && !isClosing) 
+            ? "translate-y-0 md:translate-x-0" 
+            : "translate-y-full md:translate-y-0 md:translate-x-full"
         )}
       >
+        {/* Mobil sürükleme göstergesi */}
+        <div className="md:hidden flex justify-center pt-3 pb-1">
+          <div className="w-10 h-1 rounded-full bg-[#3E4255]" />
+        </div>
+
         {/* Header */}
-        <div className="flex items-start justify-between p-6 border-b border-[#2D313E]">
+        <div className="flex items-start justify-between p-4 md:p-6 border-b border-[#2D313E]">
           <div className="flex-1 mr-4">
             <div className="flex items-center gap-2 text-[#808191] text-xs font-semibold mb-2 uppercase tracking-wider">
                <Hash size={12} />
@@ -92,12 +104,12 @@ export function TaskDetailSidebar() {
                 onChange={(e) => setTitle(e.target.value)}
                 onBlur={saveTitle}
                 onKeyDown={(e) => e.key === 'Enter' && saveTitle()}
-                className="w-full text-2xl font-bold bg-[#252836] text-white border border-blue-500 rounded px-2 py-1 outline-none"
+                className="w-full text-xl md:text-2xl font-bold bg-[#252836] text-white border border-blue-500 rounded px-2 py-1 outline-none"
               />
             ) : (
               <h2 
                 onClick={() => setEditingTitle(true)}
-                className="text-2xl font-bold text-white cursor-text hover:bg-[#252836] rounded px-2 -ml-2 py-1 transition-colors"
+                className="text-xl md:text-2xl font-bold text-white cursor-text hover:bg-[#252836] rounded px-2 -ml-2 py-1 transition-colors"
               >
                 {title || "Untitled Task"}
               </h2>
@@ -112,7 +124,7 @@ export function TaskDetailSidebar() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 md:space-y-8 custom-scrollbar">
           
           {/* Quick Info Grid */}
           <div className="grid grid-cols-2 gap-4">

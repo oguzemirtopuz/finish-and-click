@@ -37,6 +37,7 @@ interface BoardStore {
   members: Profile[]
   selectedTaskId: string | null
   commentCounts: Record<string, number>
+  isMobileSidebarOpen: boolean
 
   setWorkspaces: (ws: Workspace[]) => void
   setActiveWorkspace: (id: string) => void
@@ -52,6 +53,7 @@ interface BoardStore {
   setSelectedTaskId: (id: string | null) => void
   setCommentCount: (taskId: string, count: number) => void
   setCommentCounts: (counts: Record<string, number>) => void
+  setMobileSidebarOpen: (open: boolean) => void
 }
 
 export const useBoardStore = create<BoardStore>()(
@@ -69,6 +71,7 @@ export const useBoardStore = create<BoardStore>()(
       members: [],
       selectedTaskId: null,
       commentCounts: {},
+      isMobileSidebarOpen: false,
 
       setWorkspaces: (workspaces) => set({ workspaces }),
       setActiveWorkspace: (id) => set({ activeWorkspaceId: id }),
@@ -80,6 +83,7 @@ export const useBoardStore = create<BoardStore>()(
       setCommentCount: (taskId, count) =>
         set((state) => ({ commentCounts: { ...state.commentCounts, [taskId]: count } })),
       setCommentCounts: (counts) => set({ commentCounts: counts }),
+      setMobileSidebarOpen: (open) => set({ isMobileSidebarOpen: open }),
 
       upsertTask: (task) =>
         set((state) => {

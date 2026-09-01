@@ -241,11 +241,34 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
                        border-b border-[#1D1F2B] bg-[#1D1F2B] rounded-t-md select-none group/header hover:bg-[#242636] transition-colors
                        sticky top-0 z-30 shadow-sm"
           >
-            {/* Left colored stripe — same approach as rows */}
-            <div style={{ width: STRIPE_W, background: group.color }} className="shrink-0 self-stretch rounded-tl-md" />
-            <div style={{ width: GRIP_W }} className="shrink-0" />
-            <div style={{ width: CHECKBOX_W }} className="shrink-0" />
-            {visibleCols.map((col) => (
+            {/* Yapışkan sol kısım — yatay kaydırmada sabit kalır */}
+            <div className="sticky left-0 z-10 flex items-stretch bg-[#1D1F2B] rounded-tl-md">
+              <div style={{ width: STRIPE_W, background: group.color }} className="shrink-0 self-stretch rounded-tl-md" />
+              <div style={{ width: GRIP_W }} className="shrink-0" />
+              <div style={{ width: CHECKBOX_W }} className="shrink-0" />
+              {/* Başlık sütunu */}
+              {visibleCols.find((c) => c.id === 'title') && (
+                <div
+                  style={{ width: visibleCols.find((c) => c.id === 'title')!.width }}
+                  className="shrink-0 py-3 flex items-center gap-1 border-r-[1px] border-solid border-gray-600 px-4 justify-start text-left"
+                >
+                  {visibleCols.find((c) => c.id === 'title')!.label}
+                  {/* Başlık sütunu resizer */}
+                  <div
+                    onMouseDown={(e) => onResizeStart(e, 'title', visibleCols.find((c) => c.id === 'title')!.width)}
+                    className="absolute right-[-12px] top-0 w-[24px] h-full cursor-col-resize z-20 group/handle flex justify-center"
+                  >
+                    <div className={cn(
+                      "w-[4px] h-full transition-colors",
+                      resizingCol === 'title' ? "bg-blue-500" : "bg-transparent group-hover/handle:bg-blue-500/50"
+                    )} />
+                  </div>
+                </div>
+              )}
+              {/* Yapışkan alanın sağ gölgesi */}
+              <div className="absolute right-0 top-0 bottom-0 w-2 bg-gradient-to-r from-transparent to-black/20 translate-x-full pointer-events-none" />
+            </div>
+            {visibleCols.filter((c) => c.id !== 'title').map((col) => (
               <div
                 key={col.id}
                 style={{ width: col.width }}
@@ -295,11 +318,12 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
 
           {/* + Add task */}
           <div className="border-t border-[#1D1F2B] rounded-b-md overflow-hidden bg-[#0F111A] flex items-stretch">
-            {/* Left colored stripe — same width as rows/header */}
-            <div style={{ width: STRIPE_W, background: `${group.color}30` }} className="shrink-0 self-stretch" />
-            <div style={{ width: GRIP_W }} className="shrink-0" />
-            {/* Checkbox spacer — for alignment */}
-            <div style={{ width: CHECKBOX_W }} className="shrink-0" />
+            {/* Yapışkan sol kısım */}
+            <div className="sticky left-0 z-10 flex items-stretch bg-[#0F111A] rounded-bl-md">
+              <div style={{ width: STRIPE_W, background: `${group.color}30` }} className="shrink-0 self-stretch" />
+              <div style={{ width: GRIP_W }} className="shrink-0" />
+              <div style={{ width: CHECKBOX_W }} className="shrink-0" />
+            </div>
             
             {adding ? (
               <div className="flex items-center gap-2 flex-1 px-4 py-2.5 bg-[#1D1F2B]">

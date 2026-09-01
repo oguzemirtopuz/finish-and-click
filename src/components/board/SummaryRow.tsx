@@ -2,7 +2,6 @@ import type { Task } from '../../types/db'
 import type { ColumnDef } from '../../lib/store'
 import { STRIPE_W, CHECKBOX_W, GRIP_W } from './columns'
 import { STATUS_CONFIG } from '../cells/StatusCell'
-import { cn } from '../../lib/utils'
 
 interface Props {
   tasks: Task[]
@@ -30,23 +29,36 @@ export function SummaryRow({ tasks, columns, groupColor }: Props) {
     <div
       className="flex items-stretch border-t border-[#1D1F2B] bg-[#0F111A] text-[11px] text-[#808191] font-medium rounded-b-md"
     >
-      {/* Left colored stripe — same as header/row */}
-      <div style={{ width: STRIPE_W, background: `${groupColor}40` }} className="shrink-0 self-stretch" />
-      {/* Grip Handle placeholder — for alignment */}
-      <div style={{ width: GRIP_W }} className="shrink-0" />
-      {/* Checkbox placeholder */}
-      <div style={{ width: CHECKBOX_W }} className="shrink-0" />
+      {/* Yapışkan sol kısım */}
+      <div className="sticky left-0 z-10 flex items-stretch bg-[#0F111A]">
+        {/* Sol renkli şerit — başlık/satır ile aynı */}
+        <div style={{ width: STRIPE_W, background: `${groupColor}40` }} className="shrink-0 self-stretch" />
+        {/* Tutamaç boşluğu — hizalama için */}
+        <div style={{ width: GRIP_W }} className="shrink-0" />
+        {/* Onay kutusu boşluğu */}
+        <div style={{ width: CHECKBOX_W }} className="shrink-0" />
 
-      {visibleCols.map((col) => {
+        {/* Başlık sütunu (sticky içinde) */}
+        {(() => {
+          const titleCol = visibleCols.find((c) => c.id === 'title')
+          if (!titleCol) return null
+          return (
+            <div
+              className="shrink-0 px-4 py-2 flex items-center border-r-[1px] border-solid border-gray-600 justify-start"
+              style={{ width: titleCol.width }}
+            >
+              <span className="text-[#808191] font-semibold w-full pr-4">
+                {root.length} items
+              </span>
+            </div>
+          )
+        })()}
+      </div>
+
+      {visibleCols.filter((c) => c.id !== 'title').map((col) => {
         let content: React.ReactNode = null
 
-        if (col.id === 'title') {
-          content = (
-            <span className="text-[#808191] font-semibold w-full pr-4">
-              {root.length} items
-            </span>
-          )
-        } else if (col.id === 'status') {
+        if (col.id === 'status') {
           const total = root.length
           content = (
             <div className="flex h-8 w-full rounded-md overflow-hidden bg-[#20263c] shadow-inner">
@@ -107,10 +119,7 @@ export function SummaryRow({ tasks, columns, groupColor }: Props) {
         return (
           <div
             key={col.id}
-            className={cn(
-              "shrink-0 px-4 py-2 flex items-center border-r-[1px] border-solid border-gray-600",
-              col.id === 'title' ? "justify-start" : "justify-center"
-            )}
+            className="shrink-0 px-4 py-2 flex items-center border-r-[1px] border-solid border-gray-600 justify-center"
             style={{ width: col.width }}
           >
             {content}
@@ -118,7 +127,7 @@ export function SummaryRow({ tasks, columns, groupColor }: Props) {
         )
       })}
 
-      {/* Right symmetry bar */}
+      {/* Sağ simetri çubuğu */}
       <div style={{ width: STRIPE_W }} className="shrink-0 bg-transparent" />
     </div>
   )
