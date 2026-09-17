@@ -28,11 +28,16 @@ export async function updateWorkspace(
   id: string,
   updates: Partial<Omit<Workspace, 'id' | 'created_at'>>
 ): Promise<void> {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('workspaces')
     .update(updates)
     .eq('id', id)
+    .select()
   if (error) throw error
+  // RLS politikası nedeniyle güncelleme sessizce başarısız olabilir
+  if (!data || data.length === 0) {
+    throw new Error('Workspace güncellenemedi. Yetkiniz olmayabilir.')
+  }
 }
 
 /** Delete a workspace */

@@ -28,6 +28,18 @@ export function useBoard() {
           setActiveWorkspace(newWs.id)
         } else {
           setWorkspaces(ws)
+          // owner_id'si NULL olan workspace'leri mevcut kullanıcıya ata
+          // (eski seed verileri veya migration öncesi oluşturulanlar için)
+          const orphaned = ws.filter(w => !w.owner_id)
+          if (orphaned.length > 0) {
+            await Promise.all(
+              orphaned.map(w =>
+                supabase.from('workspaces').update({ owner_id: user.id }).eq('id', w.id)
+              )
+            )
+            // Yerel state'i de güncelle
+            setWorkspaces(ws.map(w => !w.owner_id ? { ...w, owner_id: user.id } : w))
+          }
           // If no workspace is selected or the current one is no longer valid, select the first
           const currentValid = ws.some(w => w.id === store.activeWorkspaceId)
           if (!store.activeWorkspaceId || !currentValid) {

@@ -13,10 +13,14 @@ import { supabase } from './supabase'
 export async function seed() {
   console.log('🌱 Seeding started...')
 
+  // Mevcut kullanıcıyı al — owner_id için gerekli
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { console.error('❌ Giriş yapılmamış, seed çalıştırılamaz.'); return }
+
   // ── 1. Workspace ────────────────────────────────────────────
   const { data: ws, error: wsErr } = await supabase
     .from('workspaces')
-    .insert({ name: 'Main Workspace', type: 'personal' })
+    .insert({ name: 'Main Workspace', type: 'personal', owner_id: user.id })
     .select()
     .single()
   if (wsErr) { console.error('❌ workspace:', wsErr.message); return }
