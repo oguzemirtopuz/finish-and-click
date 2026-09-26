@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ChevronRight, Pencil, Trash2, Plus, MessageSquare, ExternalLink, GripVertical } from 'lucide-react'
 import type { Task } from '../../types/db'
-import { updateTask, deleteTask, recalculateProgress, insertTask, markSubtasksDone } from '../../lib/supabase'
+import { supabase, updateTask, deleteTask, recalculateProgress, insertTask, markSubtasksDone } from '../../lib/supabase'
 import { toast } from 'sonner'
 import { useBoardStore, type ColumnDef } from '../../lib/store'
 import { StatusCell } from '../cells/StatusCell'
@@ -223,6 +223,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
     setAddingSubtask(false)
     setSubTitle('')
     if (!trimmed) return
+    const { data: { user } } = await supabase.auth.getUser()
     const newSub = await insertTask({
       group_id: task.group_id,
       parent_id: task.id,
@@ -236,6 +237,7 @@ export function TaskRow({ task, subtasks, groupColor, columns }: Props) {
       numeric_value: null,
       progress: 0,
       order: subtasks.length,
+      created_by: user?.id || null,
     })
     upsertTask(newSub)
     setExpanded(true)

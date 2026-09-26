@@ -231,7 +231,9 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
 -- ==============================================================================
--- 6. SCHEMA RELOAD (ÖNBELLEK TEMİZLEME)
--- (Yabancı anahtar / Foreign key ilişkilerinin API'ye anında yansımasını sağlar)
+-- 6. SCHEMA RELOAD & TASKS CREATED_BY
 -- ==============================================================================
+ALTER TABLE public.tasks ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES public.profiles(id);
+
 NOTIFY pgrst, reload schema;
+

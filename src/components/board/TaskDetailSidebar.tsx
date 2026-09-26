@@ -1,14 +1,51 @@
 import { useEffect, useState } from 'react'
 import { X, Calendar, MessageSquare, CheckCircle2, User, Hash } from 'lucide-react'
 import { useBoardStore } from '../../lib/store'
-import { updateTask } from '../../lib/supabase'
+import { supabase, updateTask } from '../../lib/supabase'
 import { toast } from 'sonner'
 import { cn } from '../../lib/utils'
 import { TaskComments } from './TaskComments'
 
+function formatActivityTime(isoString?: string | null): string {
+  if (!isoString) return '-'
+  const date = new Date(isoString)
+  if (isNaN(date.getTime())) return '-'
+
+  const now = new Date()
+  const isToday = date.toDateString() === now.toDateString()
+  
+  const yesterday = new Date(now)
+  yesterday.setDate(yesterday.getDate() - 1)
+  const isYesterday = date.toDateString() === yesterday.toDateString()
+
+  const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+
+  if (isToday) {
+    return `Today, ${timeStr}`
+  }
+  if (isYesterday) {
+    return `Yesterday, ${timeStr}`
+  }
+
+  if (date.getFullYear() === now.getFullYear()) {
+    const monthDay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    return `${monthDay}, ${timeStr}`
+  }
+
+  const fullDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  return `${fullDate}, ${timeStr}`
+}
+
 export function TaskDetailSidebar() {
-  const { selectedTaskId, setSelectedTaskId, tasks, upsertTask } = useBoardStore()
+  const { selectedTaskId, setSelectedTaskId, tasks, upsertTask, members } = useBoardStore()
   const task = tasks.find(t => t.id === selectedTaskId)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) setCurrentUser(data.user)
+    })
+  }, [])
   
   const [title, setTitle] = useState('')
   const [isClosing, setIsClosing] = useState(false)
@@ -165,22 +202,68 @@ export function TaskDetailSidebar() {
              )}
           </div>
 
-          {/* Activity Placeholder */}
+          {/* Recent Activity */}
           <div className="pt-4 border-t border-[#2D313E]">
              <div className="flex items-center gap-2 text-[#808191] font-semibold mb-4">
                 <MessageSquare size={18} />
                 <span>Recent Activity</span>
              </div>
              <div className="space-y-4">
-                <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[#3E4255] flex items-center justify-center text-xs text-white">AS</div>
-                    <div>
-                        <div className="text-xs text-gray-400">
-                            <span className="text-blue-400 font-medium cursor-pointer">You</span> created this task
+                {(() => {
+                  const creatorProfile = task?.created_by
+                    ? members.find(m => m.id === task.created_by)
+                    : null
+
+                  const isCurrentUserCreator = Boolean(
+                    (task?.created_by && currentUser?.id === task.created_by) ||
+                    (!task?.created_by && !creatorProfile)
+                  )
+
+                  let creatorName = 'You'
+                  let creatorInitials = 'U'
+
+                  if (isCurrentUserCreator) {
+                    creatorName = 'You'
+                    const myProfile = members.find(m => m.id === currentUser?.id)
+                    const displayName = myProfile?.full_name || currentUser?.email?.split('@')[0] || 'You'
+                    creatorInitials = displayName
+                      .split(' ')
+                      .filter(Boolean)
+                      .map((n: string) => n[0])
+                      .join('')
+                      .substring(0, 2)
+                      .toUpperCase() || 'U'
+                  } else if (creatorProfile) {
+                    creatorName = creatorProfile.full_name || creatorProfile.email.split('@')[0]
+                    const displayName = creatorProfile.full_name || creatorProfile.email.split('@')[0]
+                    creatorInitials = displayName
+                      .split(' ')
+                      .filter(Boolean)
+                      .map((n: string) => n[0])
+                      .join('')
+                      .substring(0, 2)
+                      .toUpperCase() || 'U'
+                  } else {
+                    creatorName = 'Workspace Member'
+                    creatorInitials = 'WM'
+                  }
+
+                  return (
+                    <div className="flex gap-3">
+                        <div className="w-8 h-8 rounded-full bg-[#3E4255] flex items-center justify-center text-xs text-white font-medium shrink-0">
+                          {creatorInitials}
                         </div>
-                        <div className="text-[10px] text-gray-500">Today, 14:20</div>
+                        <div>
+                            <div className="text-xs text-gray-400">
+                                <span className="text-blue-400 font-medium">{creatorName}</span> created this task
+                            </div>
+                            <div className="text-[10px] text-gray-500">
+                                {formatActivityTime(task?.created_at)}
+                            </div>
+                        </div>
                     </div>
-                </div>
+                  )
+                })()}
              </div>
           </div>
 

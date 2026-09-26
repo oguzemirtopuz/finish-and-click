@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ChevronDown, ChevronRight, Plus, Pencil, Trash2, ExternalLink } from 'lucide-react'
 import type { Task, TaskGroup } from '../../types/db'
 import { useBoardStore } from '../../lib/store'
-import { insertTask, updateGroup, deleteGroup, moveGroupToWorkspace } from '../../lib/supabase'
+import { supabase, insertTask, updateGroup, deleteGroup, moveGroupToWorkspace } from '../../lib/supabase'
 import { DropdownPortal } from '../ui/DropdownPortal'
 import { TaskRow } from './TaskRow'
 import { SummaryRow } from './SummaryRow'
@@ -68,6 +68,7 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
   async function addTask() {
     if (!newTitle.trim()) { setAdding(false); return }
     try {
+      const { data: { user } } = await supabase.auth.getUser()
       const t = await insertTask({
         group_id: group.id, parent_id: null,
         title: newTitle.trim(),
@@ -75,6 +76,7 @@ export function GroupRow({ group, tasks, allTasks }: Props) {
         assigned_to: null, start_date: null, end_date: null,
         rating: null, numeric_value: null, progress: 0,
         order: rootTasks.length,
+        created_by: user?.id || null,
       })
       useBoardStore.getState().upsertTask(t)
       setNewTitle('')

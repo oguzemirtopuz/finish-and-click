@@ -138,6 +138,19 @@ export async function insertTask(
     .insert(task)
     .select()
     .single()
+
+  // Sütun henüz veritabanına eklenmemişse güvenli geri dönüş sağla
+  if (error && (error.message?.includes('created_by') || error.code === '42703')) {
+    const { created_by, ...fallbackTask } = task
+    const retry = await supabase
+      .from('tasks')
+      .insert(fallbackTask)
+      .select()
+      .single()
+    if (retry.error) throw retry.error
+    return retry.data as Task
+  }
+
   if (error) throw error
   return data as Task
 }

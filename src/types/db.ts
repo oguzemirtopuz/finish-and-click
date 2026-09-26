@@ -45,6 +45,7 @@ export interface Task {
   progress: number
   order: number
   notes?: string | null
+  created_by?: string | null
   created_at: string
 }
 
