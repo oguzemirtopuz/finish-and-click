@@ -37,8 +37,10 @@ function formatActivityTime(isoString?: string | null): string {
 }
 
 export function TaskDetailSidebar() {
-  const { selectedTaskId, setSelectedTaskId, tasks, upsertTask, members } = useBoardStore()
+  const { selectedTaskId, setSelectedTaskId, tasks, upsertTask, members, workspaces, activeWorkspaceId } = useBoardStore()
   const task = tasks.find(t => t.id === selectedTaskId)
+  const activeWorkspace = workspaces.find(w => w.id === activeWorkspaceId)
+  const isPersonalWorkspace = activeWorkspace?.type === 'personal'
   const [currentUser, setCurrentUser] = useState<any>(null)
   
   useEffect(() => {
@@ -214,15 +216,11 @@ export function TaskDetailSidebar() {
                     ? members.find(m => m.id === task.created_by)
                     : null
 
-                  const isCurrentUserCreator = Boolean(
-                    (task?.created_by && currentUser?.id === task.created_by) ||
-                    (!task?.created_by && !creatorProfile)
-                  )
+                  let creatorName = 'Workspace Member'
+                  let creatorInitials = 'WM'
 
-                  let creatorName = 'You'
-                  let creatorInitials = 'U'
-
-                  if (isCurrentUserCreator) {
+                  // 1. Durum: created_by mevcut ve oturumdaki kullanıcıya aitse
+                  if (task?.created_by && currentUser?.id === task.created_by) {
                     creatorName = 'You'
                     const myProfile = members.find(m => m.id === currentUser?.id)
                     const displayName = myProfile?.full_name || currentUser?.email?.split('@')[0] || 'You'
@@ -233,7 +231,9 @@ export function TaskDetailSidebar() {
                       .join('')
                       .substring(0, 2)
                       .toUpperCase() || 'U'
-                  } else if (creatorProfile) {
+                  }
+                  // 2. Durum: created_by mevcut ve başka bir üyeye aitse
+                  else if (task?.created_by && creatorProfile) {
                     creatorName = creatorProfile.full_name || creatorProfile.email.split('@')[0]
                     const displayName = creatorProfile.full_name || creatorProfile.email.split('@')[0]
                     creatorInitials = displayName
@@ -242,10 +242,27 @@ export function TaskDetailSidebar() {
                       .map((n: string) => n[0])
                       .join('')
                       .substring(0, 2)
-                      .toUpperCase() || 'U'
-                  } else {
-                    creatorName = 'Workspace Member'
-                    creatorInitials = 'WM'
+                      .toUpperCase() || 'WM'
+                  }
+                  // 3. Durum: created_by boş (eski görevler)
+                  else {
+                    if (isPersonalWorkspace) {
+                      // Kişisel alanda tek kullanıcı olduğu için "You"
+                      creatorName = 'You'
+                      const myProfile = members.find(m => m.id === currentUser?.id)
+                      const displayName = myProfile?.full_name || currentUser?.email?.split('@')[0] || 'You'
+                      creatorInitials = displayName
+                        .split(' ')
+                        .filter(Boolean)
+                        .map((n: string) => n[0])
+                        .join('')
+                        .substring(0, 2)
+                        .toUpperCase() || 'U'
+                    } else {
+                      // Paylaşımlı alanda kullanıcının eklemediği/bilinmeyen görevler
+                      creatorName = 'Workspace Member'
+                      creatorInitials = 'WM'
+                    }
                   }
 
                   return (
