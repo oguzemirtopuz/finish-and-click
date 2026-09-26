@@ -37,15 +37,15 @@ function formatActivityTime(isoString?: string | null): string {
 }
 
 export function TaskDetailSidebar() {
-  const { selectedTaskId, setSelectedTaskId, tasks, upsertTask, members, workspaces, activeWorkspaceId } = useBoardStore()
+  const { selectedTaskId, setSelectedTaskId, tasks, upsertTask, members, workspaces, activeWorkspaceId, currentUserId } = useBoardStore()
   const task = tasks.find(t => t.id === selectedTaskId)
   const activeWorkspace = workspaces.find(w => w.id === activeWorkspaceId)
   const isPersonalWorkspace = activeWorkspace?.type === 'personal'
   const [currentUser, setCurrentUser] = useState<any>(null)
   
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data?.user) setCurrentUser(data.user)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) setCurrentUser(session.user)
     })
   }, [])
   
@@ -212,6 +212,7 @@ export function TaskDetailSidebar() {
              </div>
              <div className="space-y-4">
                 {(() => {
+                  const effectiveUserId = currentUserId || currentUser?.id
                   const creatorProfile = task?.created_by
                     ? members.find(m => m.id === task.created_by)
                     : null
@@ -220,9 +221,9 @@ export function TaskDetailSidebar() {
                   let creatorInitials = 'WM'
 
                   // 1. Durum: created_by mevcut ve oturumdaki kullanıcıya aitse
-                  if (task?.created_by && currentUser?.id === task.created_by) {
+                  if (task?.created_by && effectiveUserId && task.created_by === effectiveUserId) {
                     creatorName = 'You'
-                    const myProfile = members.find(m => m.id === currentUser?.id)
+                    const myProfile = members.find(m => m.id === effectiveUserId)
                     const displayName = myProfile?.full_name || currentUser?.email?.split('@')[0] || 'You'
                     creatorInitials = displayName
                       .split(' ')
@@ -246,10 +247,11 @@ export function TaskDetailSidebar() {
                   }
                   // 3. Durum: created_by boş (eski görevler)
                   else {
-                    if (isPersonalWorkspace) {
-                      // Kişisel alanda tek kullanıcı olduğu için "You"
+                    const isAssignedToMe = Boolean(effectiveUserId && task?.assigned_to === effectiveUserId)
+                    if (isPersonalWorkspace || isAssignedToMe) {
+                      // Kişisel alanda veya kullanıcıya atanmış görevlerde "You"
                       creatorName = 'You'
-                      const myProfile = members.find(m => m.id === currentUser?.id)
+                      const myProfile = members.find(m => m.id === effectiveUserId)
                       const displayName = myProfile?.full_name || currentUser?.email?.split('@')[0] || 'You'
                       creatorInitials = displayName
                         .split(' ')

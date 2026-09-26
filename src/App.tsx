@@ -13,11 +13,12 @@ import { X } from 'lucide-react'
 function App() {
   const [session, setSession] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const { isMobileSidebarOpen, setMobileSidebarOpen } = useBoardStore()
+  const { isMobileSidebarOpen, setMobileSidebarOpen, setCurrentUserId } = useBoardStore()
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
+      setCurrentUserId(session?.user?.id ?? null)
       setLoading(false)
     })
 
@@ -25,6 +26,7 @@ function App() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
+      setCurrentUserId(session?.user?.id ?? null)
     })
 
     return () => subscription.unsubscribe()

@@ -38,7 +38,9 @@ interface BoardStore {
   selectedTaskId: string | null
   commentCounts: Record<string, number>
   isMobileSidebarOpen: boolean
+  currentUserId: string | null
 
+  setCurrentUserId: (id: string | null) => void
   setWorkspaces: (ws: Workspace[]) => void
   setActiveWorkspace: (id: string) => void
   setGroups: (groups: TaskGroup[]) => void
@@ -72,7 +74,9 @@ export const useBoardStore = create<BoardStore>()(
       selectedTaskId: null,
       commentCounts: {},
       isMobileSidebarOpen: false,
+      currentUserId: null,
 
+      setCurrentUserId: (id) => set({ currentUserId: id }),
       setWorkspaces: (workspaces) => set({ workspaces }),
       setActiveWorkspace: (id) => set({ activeWorkspaceId: id }),
       setGroups: (groups) => set({ groups }),
