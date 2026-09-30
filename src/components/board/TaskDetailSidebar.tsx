@@ -261,6 +261,11 @@ export function TaskDetailSidebar() {
                   let creatorDisplay = 'Unknown'
                   let creatorInitials = '?'
 
+                  // Workspace sahibi miyiz? (type alanı null olabilir, bu yüzden owner_id kontrolü de lazım)
+                  const isWorkspaceOwner = Boolean(
+                    resolvedUserId && activeWorkspace?.owner_id === resolvedUserId
+                  )
+
                   // 1. Doğrudan veya async çözümlenmiş creator email'i (DB'den gelen kesin bilgi)
                   const effectiveCreatorEmail = task?.creator?.email || creatorEmail
 
@@ -288,12 +293,12 @@ export function TaskDetailSidebar() {
                     }
                   } else {
                     // created_by boş → eski görev, kesin bilgi yok
-                    if (isPersonalWorkspace) {
-                      // Kişisel alanda sadece sen varsın → kesinlikle sen
+                    if (isPersonalWorkspace || isWorkspaceOwner) {
+                      // Kişisel alan veya workspace sahibiysen → büyük ihtimalle sen
                       creatorDisplay = 'You'
                       creatorInitials = getInitials(userEmail?.split('@')[0] || 'You')
                     } else {
-                      // Ortak alanda eski görev, kimin oluşturduğu bilinmiyor
+                      // Ortak alanda başka birinin workspace'i, kimin oluşturduğu bilinmiyor
                       creatorDisplay = 'Unknown'
                       creatorInitials = '?'
                     }
