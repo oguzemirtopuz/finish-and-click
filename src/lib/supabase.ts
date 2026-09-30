@@ -369,17 +369,27 @@ export async function fetchWorkspaceMembers(workspaceId: string): Promise<Profil
 
   let ownerProfile: Profile | null = null
   if (wsData?.owner_id) {
-    const { data: ownerData } = await supabase
+    // Önce full_name ile dene, başarısız olursa sadece email ile çek
+    let { data: ownerData, error: ownerErr } = await supabase
       .from('profiles')
       .select('id, email, full_name')
       .eq('id', wsData.owner_id)
       .maybeSingle()
+    if (ownerErr) {
+      const retry = await supabase
+        .from('profiles')
+        .select('id, email')
+        .eq('id', wsData.owner_id)
+        .maybeSingle()
+      ownerData = retry.data ? { ...retry.data, full_name: null } : null
+    }
     if (ownerData) {
       ownerProfile = ownerData as Profile
     }
   }
 
   // 1. Fetch real profiles (via workspace_members)
+  let profileList: Profile[] = []
   const { data: members, error: memberErr } = await supabase
     .from('workspace_members')
     .select(`
@@ -391,7 +401,25 @@ export async function fetchWorkspaceMembers(workspaceId: string): Promise<Profil
     `)
     .eq('workspace_id', workspaceId)
 
-  if (memberErr) console.error("Member fetch error:", memberErr)
+  if (memberErr) {
+    // full_name sütunu yoksa veya join hata veriyorsa, full_name olmadan tekrar dene
+    console.warn("Member fetch error, retrying without full_name:", memberErr.message)
+    const { data: retryMembers } = await supabase
+      .from('workspace_members')
+      .select(`
+        profiles (
+          id,
+          email
+        )
+      `)
+      .eq('workspace_id', workspaceId)
+    profileList = (retryMembers as any[])?.map(m => {
+      if (!m.profiles) return null
+      return { ...m.profiles, full_name: null }
+    }).filter(Boolean) || []
+  } else {
+    profileList = (members as any[])?.map(m => m.profiles).filter(Boolean) || []
+  }
 
   // 2. Fetch manually added contacts (from workspace_contacts table)
   const { data: contacts, error: contactErr } = await supabase
@@ -404,7 +432,6 @@ export async function fetchWorkspaceMembers(workspaceId: string): Promise<Profil
     console.warn("Contacts fetch error (table might not exist yet):", contactErr.message)
   }
 
-  const profileList = (members as any[])?.map(m => m.profiles).filter(Boolean) || []
   const contactList = (contacts || []).map(c => ({
     id: c.id,
     email: c.email || `${c.full_name.toLowerCase().replace(/\s+/g, '.')}@manual.local`,

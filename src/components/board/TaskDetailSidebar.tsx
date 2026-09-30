@@ -252,8 +252,11 @@ export function TaskDetailSidebar() {
                   const getInitials = (name: string) =>
                     name.split(' ').filter(Boolean).map(n => n[0]).join('').substring(0, 2).toUpperCase() || '?'
 
-                  let creatorDisplay = 'Unknown'
+                   let creatorDisplay = 'Unknown'
                   let creatorInitials = '?'
+
+                  // Workspace sahibi miyiz?
+                  const isWorkspaceOwner = resolvedUserId && activeWorkspace?.owner_id === resolvedUserId
 
                   if (task?.created_by) {
                     // created_by dolu → kesin bilgi var
@@ -272,7 +275,8 @@ export function TaskDetailSidebar() {
                     }
                   } else {
                     // created_by boş → eski görev, kimin oluşturduğu bilinmiyor
-                    if (isPersonalWorkspace) {
+                    // Personal workspace veya workspace'in tek sahibi isek → "You"
+                    if (isPersonalWorkspace || isWorkspaceOwner) {
                       creatorDisplay = 'You'
                       creatorInitials = getInitials(userEmail?.split('@')[0] || 'You')
                     } else {
