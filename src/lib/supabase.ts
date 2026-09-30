@@ -151,14 +151,21 @@ export async function deleteTask(id: string): Promise<void> {
  */
 export async function getDbUserIdForTasks(authUserId: string, authUserEmail?: string | null): Promise<string> {
   try {
-    // 1. public.users tablosunda auth_id veya id ile bu kullanıcı var mı kontrol et
+    // 1. public.users tablosunda auth_id, id veya email ile bu kullanıcı var mı kontrol et
+    let orQuery = `auth_id.eq.${authUserId},id.eq.${authUserId}`
+    if (authUserEmail) {
+      orQuery += `,email.eq.${authUserEmail}`
+    }
     const { data: existingUser } = await supabase
       .from('users')
       .select('id, auth_id')
-      .or(`auth_id.eq.${authUserId},id.eq.${authUserId}`)
+      .or(orQuery)
       .maybeSingle()
 
     if (existingUser?.id) {
+      if (!existingUser.auth_id || existingUser.auth_id !== authUserId) {
+        await supabase.from('users').update({ auth_id: authUserId }).eq('id', existingUser.id)
+      }
       return existingUser.id
     }
 

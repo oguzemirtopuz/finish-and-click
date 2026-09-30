@@ -10,17 +10,15 @@
 -- ==============================================================================
 
 -- 1. Mevcut auth.users kullanıcılarını public.users tablosuna senkronize et
-INSERT INTO public.users (id, email, name, auth_id, created_at)
+INSERT INTO public.users (email, name, auth_id, created_at)
 SELECT 
-  u.id, 
   u.email, 
   COALESCE(u.raw_user_meta_data->>'full_name', split_part(u.email, '@', 1)),
   u.id,
   u.created_at
 FROM auth.users u
-ON CONFLICT (id) DO UPDATE 
+ON CONFLICT (email) DO UPDATE 
 SET 
-  email = EXCLUDED.email, 
   auth_id = EXCLUDED.auth_id,
   name = COALESCE(public.users.name, EXCLUDED.name);
 
@@ -33,17 +31,15 @@ BEGIN
   VALUES (NEW.id, NEW.email)
   ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email;
 
-  -- public.users tablosuna da ekle (böylece tasks.created_by FK asla hata vermez)
-  INSERT INTO public.users (id, email, name, auth_id)
+  -- public.users tablosuna da ekle (email çakışmasında auth_id güncellenir)
+  INSERT INTO public.users (email, name, auth_id)
   VALUES (
-    NEW.id, 
     NEW.email, 
     COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
     NEW.id
   )
-  ON CONFLICT (id) DO UPDATE 
+  ON CONFLICT (email) DO UPDATE 
   SET 
-    email = EXCLUDED.email, 
     auth_id = EXCLUDED.auth_id,
     name = COALESCE(public.users.name, EXCLUDED.name);
 
