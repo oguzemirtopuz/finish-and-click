@@ -63,23 +63,6 @@ export function TaskDetailSidebar() {
 
   // Creator email'ini çöz (task.creator, members, users veya profiles tablosundan)
   const [creatorEmail, setCreatorEmail] = useState<string | null>(null)
-  const [ownerEmail, setOwnerEmail] = useState<string | null>(null)
-
-  // Workspace owner email'ini çöz
-  useEffect(() => {
-    if (!activeWorkspace?.owner_id) {
-      setOwnerEmail(null)
-      return
-    }
-    const foundOwner = members.find(m => m.id === activeWorkspace.owner_id)
-    if (foundOwner?.email) {
-      setOwnerEmail(foundOwner.email)
-      return
-    }
-    fetchProfileEmail(activeWorkspace.owner_id).then(email => {
-      if (email) setOwnerEmail(email)
-    })
-  }, [activeWorkspace?.owner_id, members])
 
   useEffect(() => {
     console.log('[Creator Debug] task.created_by:', task?.created_by, 'task.creator:', task?.creator, 'resolvedUserId:', resolvedUserId)
@@ -278,18 +261,13 @@ export function TaskDetailSidebar() {
                   let creatorDisplay = 'Unknown'
                   let creatorInitials = '?'
 
-                  // Workspace sahibi miyiz?
-                  const isWorkspaceOwner = Boolean(
-                    resolvedUserId && activeWorkspace?.owner_id === resolvedUserId
-                  )
-
-                  // 1. Doğrudan veya async çözümlenmiş creator email'i
+                  // 1. Doğrudan veya async çözümlenmiş creator email'i (DB'den gelen kesin bilgi)
                   const effectiveCreatorEmail = task?.creator?.email || creatorEmail
 
                   if (effectiveCreatorEmail) {
+                    // Email'i biliyoruz → benim mi kontrol et
                     const isMe = Boolean(
-                      (resolvedUserId && (task?.creator?.id === resolvedUserId || task?.created_by === resolvedUserId)) ||
-                      (userEmail && effectiveCreatorEmail.toLowerCase() === userEmail.toLowerCase())
+                      userEmail && effectiveCreatorEmail.toLowerCase() === userEmail.toLowerCase()
                     )
                     if (isMe) {
                       creatorDisplay = 'You'
@@ -299,24 +277,23 @@ export function TaskDetailSidebar() {
                       creatorInitials = getInitials(effectiveCreatorEmail.split('@')[0])
                     }
                   } else if (task?.created_by) {
-                    // created_by ID var
+                    // created_by ID var ama email henüz çözülemedi
                     if (resolvedUserId && task.created_by === resolvedUserId) {
                       creatorDisplay = 'You'
                       creatorInitials = getInitials(userEmail?.split('@')[0] || 'You')
                     } else {
-                      creatorDisplay = 'Unknown'
+                      // Henüz yükleniyor olabilir
+                      creatorDisplay = '...'
                       creatorInitials = '?'
                     }
                   } else {
-                    // created_by boş → eski görev
-                    if (isPersonalWorkspace || isWorkspaceOwner) {
+                    // created_by boş → eski görev, kesin bilgi yok
+                    if (isPersonalWorkspace) {
+                      // Kişisel alanda sadece sen varsın → kesinlikle sen
                       creatorDisplay = 'You'
                       creatorInitials = getInitials(userEmail?.split('@')[0] || 'You')
-                    } else if (ownerEmail) {
-                      // Ortak alanda eski görevler için çalışma alanı sahibinin emaili
-                      creatorDisplay = ownerEmail
-                      creatorInitials = getInitials(ownerEmail.split('@')[0])
                     } else {
+                      // Ortak alanda eski görev, kimin oluşturduğu bilinmiyor
                       creatorDisplay = 'Unknown'
                       creatorInitials = '?'
                     }
