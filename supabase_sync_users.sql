@@ -64,4 +64,4 @@ CREATE POLICY "Users are readable by authenticated users." ON public.users
 FOR SELECT USING (auth.role() = 'authenticated');
 
 -- 4. PostgREST şema önbelleğini yenile
-NOTIFY pgrst, reload schema;
+NOTIFY pgrst, 'reload schema';
