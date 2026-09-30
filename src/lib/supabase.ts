@@ -578,3 +578,18 @@ export async function markSubtasksDone(parentId: string): Promise<void> {
 
   if (error) throw error
 }
+
+/** Profil ID'si ile kullanıcının email adresini doğrudan çeker */
+export async function fetchProfileEmail(profileId: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('email')
+    .eq('id', profileId)
+    .maybeSingle()
+
+  if (error) {
+    console.warn('fetchProfileEmail error:', error.message)
+    return null
+  }
+  return data?.email ?? null
+}

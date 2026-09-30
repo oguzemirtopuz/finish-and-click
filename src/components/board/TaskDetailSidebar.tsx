@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { X, Calendar, MessageSquare, CheckCircle2, User, Hash } from 'lucide-react'
 import { useBoardStore } from '../../lib/store'
-import { supabase, updateTask } from '../../lib/supabase'
+import { supabase, updateTask, fetchProfileEmail } from '../../lib/supabase'
 import { toast } from 'sonner'
 import { cn } from '../../lib/utils'
 import { TaskComments } from './TaskComments'
@@ -41,13 +41,44 @@ export function TaskDetailSidebar() {
   const task = tasks.find(t => t.id === selectedTaskId)
   const activeWorkspace = workspaces.find(w => w.id === activeWorkspaceId)
   const isPersonalWorkspace = activeWorkspace?.type === 'personal'
-  const [currentUser, setCurrentUser] = useState<any>(null)
-  
+
+  // Kullanıcı kimliğini güvenilir şekilde al (store + async fallback)
+  const [resolvedUserId, setResolvedUserId] = useState<string | null>(currentUserId)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+
   useEffect(() => {
+    // Store'dan geldiyse hemen kullan
+    if (currentUserId) {
+      setResolvedUserId(currentUserId)
+    }
+    // Her durumda session'dan da kontrol et (güvenlik)
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) setCurrentUser(session.user)
+      if (session?.user) {
+        setResolvedUserId(session.user.id)
+        setUserEmail(session.user.email ?? null)
+      }
     })
-  }, [])
+  }, [currentUserId])
+
+  // Creator email'ini çöz (members'da yoksa profiles tablosundan çek)
+  const [creatorEmail, setCreatorEmail] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!task?.created_by) {
+      setCreatorEmail(null)
+      return
+    }
+    // Önce members listesinde ara
+    const memberProfile = members.find(m => m.id === task.created_by)
+    if (memberProfile) {
+      setCreatorEmail(memberProfile.email)
+      return
+    }
+    // Members'da yoksa profiles tablosundan çek
+    fetchProfileEmail(task.created_by).then(email => {
+      setCreatorEmail(email)
+    })
+  }, [task?.id, task?.created_by, members])
   
   const [title, setTitle] = useState('')
   const [isClosing, setIsClosing] = useState(false)
@@ -212,58 +243,36 @@ export function TaskDetailSidebar() {
              </div>
              <div className="space-y-4">
                 {(() => {
-                  const effectiveUserId = currentUserId || currentUser?.id
-                  const creatorProfile = task?.created_by
-                    ? members.find(m => m.id === task.created_by)
-                    : null
+                  // Baş harf hesaplama yardımcısı
+                  const getInitials = (name: string) =>
+                    name.split(' ').filter(Boolean).map(n => n[0]).join('').substring(0, 2).toUpperCase() || '?'
 
-                  let creatorName = 'Workspace Member'
-                  let creatorInitials = 'WM'
+                  let creatorDisplay = 'Unknown'
+                  let creatorInitials = '?'
 
-                  // 1. Durum: created_by mevcut ve oturumdaki kullanıcıya aitse
-                  if (task?.created_by && effectiveUserId && task.created_by === effectiveUserId) {
-                    creatorName = 'You'
-                    const myProfile = members.find(m => m.id === effectiveUserId)
-                    const displayName = myProfile?.full_name || currentUser?.email?.split('@')[0] || 'You'
-                    creatorInitials = displayName
-                      .split(' ')
-                      .filter(Boolean)
-                      .map((n: string) => n[0])
-                      .join('')
-                      .substring(0, 2)
-                      .toUpperCase() || 'U'
-                  }
-                  // 2. Durum: created_by mevcut ve başka bir üyeye aitse
-                  else if (task?.created_by && creatorProfile) {
-                    creatorName = creatorProfile.full_name || creatorProfile.email.split('@')[0]
-                    const displayName = creatorProfile.full_name || creatorProfile.email.split('@')[0]
-                    creatorInitials = displayName
-                      .split(' ')
-                      .filter(Boolean)
-                      .map((n: string) => n[0])
-                      .join('')
-                      .substring(0, 2)
-                      .toUpperCase() || 'WM'
-                  }
-                  // 3. Durum: created_by boş (eski görevler)
-                  else {
-                    const isAssignedToMe = Boolean(effectiveUserId && task?.assigned_to === effectiveUserId)
-                    if (isPersonalWorkspace || isAssignedToMe) {
-                      // Kişisel alanda veya kullanıcıya atanmış görevlerde "You"
-                      creatorName = 'You'
-                      const myProfile = members.find(m => m.id === effectiveUserId)
-                      const displayName = myProfile?.full_name || currentUser?.email?.split('@')[0] || 'You'
-                      creatorInitials = displayName
-                        .split(' ')
-                        .filter(Boolean)
-                        .map((n: string) => n[0])
-                        .join('')
-                        .substring(0, 2)
-                        .toUpperCase() || 'U'
+                  if (task?.created_by) {
+                    // created_by dolu → kesin bilgi var
+                    if (resolvedUserId && task.created_by === resolvedUserId) {
+                      // Ben oluşturdum
+                      creatorDisplay = 'You'
+                      creatorInitials = getInitials(userEmail?.split('@')[0] || 'You')
+                    } else if (creatorEmail) {
+                      // Başka biri oluşturmuş — tam email göster
+                      creatorDisplay = creatorEmail
+                      creatorInitials = getInitials(creatorEmail.split('@')[0])
                     } else {
-                      // Paylaşımlı alanda kullanıcının eklemediği/bilinmeyen görevler
-                      creatorName = 'Workspace Member'
-                      creatorInitials = 'WM'
+                      // Profil henüz yükleniyor veya bulunamadı
+                      creatorDisplay = 'Unknown'
+                      creatorInitials = '?'
+                    }
+                  } else {
+                    // created_by boş → eski görev, kimin oluşturduğu bilinmiyor
+                    if (isPersonalWorkspace) {
+                      creatorDisplay = 'You'
+                      creatorInitials = getInitials(userEmail?.split('@')[0] || 'You')
+                    } else {
+                      creatorDisplay = 'Unknown'
+                      creatorInitials = '?'
                     }
                   }
 
@@ -274,7 +283,7 @@ export function TaskDetailSidebar() {
                         </div>
                         <div>
                             <div className="text-xs text-gray-400">
-                                <span className="text-blue-400 font-medium">{creatorName}</span> created this task
+                                <span className="text-blue-400 font-medium">{creatorDisplay}</span> created this task
                             </div>
                             <div className="text-[10px] text-gray-500">
                                 {formatActivityTime(task?.created_at)}
