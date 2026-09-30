@@ -56,6 +56,7 @@ export function TaskDetailSidebar() {
       if (session?.user) {
         setResolvedUserId(session.user.id)
         setUserEmail(session.user.email ?? null)
+        console.log('[Creator Debug] resolvedUserId:', session.user.id, 'email:', session.user.email)
       }
     })
   }, [currentUserId])
@@ -64,6 +65,7 @@ export function TaskDetailSidebar() {
   const [creatorEmail, setCreatorEmail] = useState<string | null>(null)
 
   useEffect(() => {
+    console.log('[Creator Debug] task.created_by:', task?.created_by, 'resolvedUserId:', resolvedUserId, 'members count:', members.length)
     if (!task?.created_by) {
       setCreatorEmail(null)
       return
@@ -71,14 +73,17 @@ export function TaskDetailSidebar() {
     // Önce members listesinde ara
     const memberProfile = members.find(m => m.id === task.created_by)
     if (memberProfile) {
+      console.log('[Creator Debug] Found in members:', memberProfile.email)
       setCreatorEmail(memberProfile.email)
       return
     }
     // Members'da yoksa profiles tablosundan çek
+    console.log('[Creator Debug] Not in members, fetching from profiles...')
     fetchProfileEmail(task.created_by).then(email => {
+      console.log('[Creator Debug] fetchProfileEmail result:', email)
       setCreatorEmail(email)
     })
-  }, [task?.id, task?.created_by, members])
+  }, [task?.id, task?.created_by, members, resolvedUserId])
   
   const [title, setTitle] = useState('')
   const [isClosing, setIsClosing] = useState(false)

@@ -358,8 +358,27 @@ export async function recalculateProgress(parentId: string): Promise<void> {
   }
 }
 
-/** Fetch workspace members (Profiles + manually added contacts) */
+/** Fetch workspace members (Profiles + manually added contacts + workspace owner) */
 export async function fetchWorkspaceMembers(workspaceId: string): Promise<Profile[]> {
+  // 0. Workspace owner'ını bul ve profilini çek
+  const { data: wsData } = await supabase
+    .from('workspaces')
+    .select('owner_id')
+    .eq('id', workspaceId)
+    .single()
+
+  let ownerProfile: Profile | null = null
+  if (wsData?.owner_id) {
+    const { data: ownerData } = await supabase
+      .from('profiles')
+      .select('id, email, full_name')
+      .eq('id', wsData.owner_id)
+      .maybeSingle()
+    if (ownerData) {
+      ownerProfile = ownerData as Profile
+    }
+  }
+
   // 1. Fetch real profiles (via workspace_members)
   const { data: members, error: memberErr } = await supabase
     .from('workspace_members')
@@ -392,7 +411,13 @@ export async function fetchWorkspaceMembers(workspaceId: string): Promise<Profil
     full_name: c.full_name
   }))
 
-  return [...profileList, ...contactList]
+  // Owner'ı listeye ekle (zaten listede değilse)
+  const allProfiles = [...profileList, ...contactList]
+  if (ownerProfile && !allProfiles.some(p => p.id === ownerProfile!.id)) {
+    allProfiles.unshift(ownerProfile)
+  }
+
+  return allProfiles
 }
 
 /** Add a manual assignee contact
