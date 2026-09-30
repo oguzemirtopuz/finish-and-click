@@ -47,6 +47,11 @@ export interface Task {
   notes?: string | null
   created_by?: string | null
   created_at: string
+  creator?: {
+    id: string
+    email: string
+    name?: string | null
+  } | null
 }
 
 export interface Profile {

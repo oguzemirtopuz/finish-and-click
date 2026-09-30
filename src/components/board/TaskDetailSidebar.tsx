@@ -61,29 +61,52 @@ export function TaskDetailSidebar() {
     })
   }, [currentUserId])
 
-  // Creator email'ini çöz (members'da yoksa profiles tablosundan çek)
+  // Creator email'ini çöz (task.creator, members, users veya profiles tablosundan)
   const [creatorEmail, setCreatorEmail] = useState<string | null>(null)
+  const [ownerEmail, setOwnerEmail] = useState<string | null>(null)
+
+  // Workspace owner email'ini çöz
+  useEffect(() => {
+    if (!activeWorkspace?.owner_id) {
+      setOwnerEmail(null)
+      return
+    }
+    const foundOwner = members.find(m => m.id === activeWorkspace.owner_id)
+    if (foundOwner?.email) {
+      setOwnerEmail(foundOwner.email)
+      return
+    }
+    fetchProfileEmail(activeWorkspace.owner_id).then(email => {
+      if (email) setOwnerEmail(email)
+    })
+  }, [activeWorkspace?.owner_id, members])
 
   useEffect(() => {
-    console.log('[Creator Debug] task.created_by:', task?.created_by, 'resolvedUserId:', resolvedUserId, 'members count:', members.length)
+    console.log('[Creator Debug] task.created_by:', task?.created_by, 'task.creator:', task?.creator, 'resolvedUserId:', resolvedUserId)
+
+    // 1. Task üzerinde creator zaten joined geldiyse
+    if (task?.creator?.email) {
+      setCreatorEmail(task.creator.email)
+      return
+    }
+
     if (!task?.created_by) {
       setCreatorEmail(null)
       return
     }
-    // Önce members listesinde ara
+
+    // 2. Members listesinde ara
     const memberProfile = members.find(m => m.id === task.created_by)
     if (memberProfile) {
-      console.log('[Creator Debug] Found in members:', memberProfile.email)
       setCreatorEmail(memberProfile.email)
       return
     }
-    // Members'da yoksa profiles tablosundan çek
-    console.log('[Creator Debug] Not in members, fetching from profiles...')
+
+    // 3. fetchProfileEmail ile hem profiles hem users tablosundan çek
     fetchProfileEmail(task.created_by).then(email => {
-      console.log('[Creator Debug] fetchProfileEmail result:', email)
       setCreatorEmail(email)
     })
-  }, [task?.id, task?.created_by, members, resolvedUserId])
+  }, [task?.id, task?.created_by, (task as any)?.creator, members, resolvedUserId])
   
   const [title, setTitle] = useState('')
   const [isClosing, setIsClosing] = useState(false)
@@ -252,33 +275,47 @@ export function TaskDetailSidebar() {
                   const getInitials = (name: string) =>
                     name.split(' ').filter(Boolean).map(n => n[0]).join('').substring(0, 2).toUpperCase() || '?'
 
-                   let creatorDisplay = 'Unknown'
+                  let creatorDisplay = 'Unknown'
                   let creatorInitials = '?'
 
                   // Workspace sahibi miyiz?
-                  const isWorkspaceOwner = resolvedUserId && activeWorkspace?.owner_id === resolvedUserId
+                  const isWorkspaceOwner = Boolean(
+                    resolvedUserId && activeWorkspace?.owner_id === resolvedUserId
+                  )
 
-                  if (task?.created_by) {
-                    // created_by dolu → kesin bilgi var
-                    if (resolvedUserId && task.created_by === resolvedUserId) {
-                      // Ben oluşturdum
+                  // 1. Doğrudan veya async çözümlenmiş creator email'i
+                  const effectiveCreatorEmail = task?.creator?.email || creatorEmail
+
+                  if (effectiveCreatorEmail) {
+                    const isMe = Boolean(
+                      (resolvedUserId && (task?.creator?.id === resolvedUserId || task?.created_by === resolvedUserId)) ||
+                      (userEmail && effectiveCreatorEmail.toLowerCase() === userEmail.toLowerCase())
+                    )
+                    if (isMe) {
                       creatorDisplay = 'You'
                       creatorInitials = getInitials(userEmail?.split('@')[0] || 'You')
-                    } else if (creatorEmail) {
-                      // Başka biri oluşturmuş — tam email göster
-                      creatorDisplay = creatorEmail
-                      creatorInitials = getInitials(creatorEmail.split('@')[0])
                     } else {
-                      // Profil henüz yükleniyor veya bulunamadı
+                      creatorDisplay = effectiveCreatorEmail
+                      creatorInitials = getInitials(effectiveCreatorEmail.split('@')[0])
+                    }
+                  } else if (task?.created_by) {
+                    // created_by ID var
+                    if (resolvedUserId && task.created_by === resolvedUserId) {
+                      creatorDisplay = 'You'
+                      creatorInitials = getInitials(userEmail?.split('@')[0] || 'You')
+                    } else {
                       creatorDisplay = 'Unknown'
                       creatorInitials = '?'
                     }
                   } else {
-                    // created_by boş → eski görev, kimin oluşturduğu bilinmiyor
-                    // Personal workspace veya workspace'in tek sahibi isek → "You"
+                    // created_by boş → eski görev
                     if (isPersonalWorkspace || isWorkspaceOwner) {
                       creatorDisplay = 'You'
                       creatorInitials = getInitials(userEmail?.split('@')[0] || 'You')
+                    } else if (ownerEmail) {
+                      // Ortak alanda eski görevler için çalışma alanı sahibinin emaili
+                      creatorDisplay = ownerEmail
+                      creatorInitials = getInitials(ownerEmail.split('@')[0])
                     } else {
                       creatorDisplay = 'Unknown'
                       creatorInitials = '?'

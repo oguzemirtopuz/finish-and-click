@@ -4,7 +4,7 @@ import { useBoard } from './hooks/useBoard'
 import { Navbar } from './components/board/Navbar'
 import { BoardView } from './components/board/BoardView'
 import { Auth } from './components/auth/Auth'
-import { supabase } from './lib/supabase'
+import { supabase, getDbUserIdForTasks } from './lib/supabase'
 import { Sidebar } from './components/board/Sidebar'
 import { Toaster } from 'sonner'
 import { useBoardStore } from './lib/store'
@@ -19,6 +19,9 @@ function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setCurrentUserId(session?.user?.id ?? null)
+      if (session?.user) {
+        getDbUserIdForTasks(session.user.id, session.user.email)
+      }
       setLoading(false)
     })
 
@@ -27,6 +30,9 @@ function App() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       setCurrentUserId(session?.user?.id ?? null)
+      if (session?.user) {
+        getDbUserIdForTasks(session.user.id, session.user.email)
+      }
     })
 
     return () => subscription.unsubscribe()

@@ -95,16 +95,32 @@ export async function updateGroup(
 }
 
 /** Fetch all tasks belonging to a workspace (including subtasks) */
+/** Fetch all tasks belonging to a workspace (including subtasks and creator info) */
 export async function fetchTasks(workspaceId: string): Promise<Task[]> {
   const { data, error } = await supabase
     .from('tasks')
     .select(`
       *,
-      task_groups!inner(workspace_id)
+      task_groups!inner(workspace_id),
+      creator:users!tasks_created_by_fkey(id, email, name)
     `)
     .eq('task_groups.workspace_id', workspaceId)
     .order('order', { ascending: true })
-  if (error) throw error
+
+  if (error) {
+    console.warn("fetchTasks with creator join failed, falling back:", error.message)
+    const retry = await supabase
+      .from('tasks')
+      .select(`
+        *,
+        task_groups!inner(workspace_id)
+      `)
+      .eq('task_groups.workspace_id', workspaceId)
+      .order('order', { ascending: true })
+    if (retry.error) throw retry.error
+    return (retry.data ?? []) as Task[]
+  }
+
   return (data ?? []) as Task[]
 }
 
@@ -129,25 +145,97 @@ export async function deleteTask(id: string): Promise<void> {
   if (error) throw error
 }
 
+/**
+ * Kullanıcının public.users tablosundaki karşılık gelen id'sini bulur veya oluşturur.
+ * tasks.created_by alanı users(id) foreign key'ine bağlıysa bu işlem FK hatasını önler.
+ */
+export async function getDbUserIdForTasks(authUserId: string, authUserEmail?: string | null): Promise<string> {
+  try {
+    // 1. public.users tablosunda auth_id veya id ile bu kullanıcı var mı kontrol et
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id, auth_id')
+      .or(`auth_id.eq.${authUserId},id.eq.${authUserId}`)
+      .maybeSingle()
+
+    if (existingUser?.id) {
+      return existingUser.id
+    }
+
+    // 2. Yoksa public.users tablosuna id = authUserId ile eklemeyi dene
+    if (authUserEmail) {
+      const { data: insertedUser, error: insErr } = await supabase
+        .from('users')
+        .insert({
+          id: authUserId,
+          auth_id: authUserId,
+          email: authUserEmail,
+          name: authUserEmail.split('@')[0]
+        })
+        .select('id')
+        .maybeSingle()
+
+      if (!insErr && insertedUser?.id) {
+        return insertedUser.id
+      }
+    }
+  } catch (err) {
+    console.warn('getDbUserIdForTasks warning:', err)
+  }
+
+  // Varsayılan olarak doğrudan authUserId döndür
+  return authUserId
+}
+
 /** Insert a new task */
 export async function insertTask(
   task: Omit<Task, 'id' | 'created_at'>
 ): Promise<Task> {
+  let finalCreatedBy = task.created_by
+  if (finalCreatedBy) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user && user.id === finalCreatedBy) {
+        finalCreatedBy = await getDbUserIdForTasks(user.id, user.email)
+      }
+    } catch (e) {
+      console.warn('Error resolving db user id for insertTask:', e)
+    }
+  }
+
+  const taskToInsert = { ...task, created_by: finalCreatedBy }
+
   const { data, error } = await supabase
     .from('tasks')
-    .insert(task)
-    .select()
+    .insert(taskToInsert)
+    .select(`
+      *,
+      creator:users!tasks_created_by_fkey(id, email, name)
+    `)
     .single()
 
-  // Sütun henüz veritabanına eklenmemişse güvenli geri dönüş sağla
+  // Sütun henüz veritabanına eklenmemişse veya FK hatası olursa güvenli geri dönüş sağla
   if (error && (error.message?.includes('created_by') || error.code === '42703')) {
+    console.warn('Task insert with created_by failed, falling back:', error.message)
     const { created_by, ...fallbackTask } = task
     const retry = await supabase
       .from('tasks')
       .insert(fallbackTask)
-      .select()
+      .select(`
+        *,
+        creator:users!tasks_created_by_fkey(id, email, name)
+      `)
       .single()
-    if (retry.error) throw retry.error
+    if (retry.error) {
+      // Creator join olmadan son deneme
+      const lastRetry = await supabase
+        .from('tasks')
+        .insert(fallbackTask)
+        .select()
+        .single()
+      if (lastRetry.error) throw lastRetry.error
+      return lastRetry.data as Task
+    }
     return retry.data as Task
   }
 
@@ -358,93 +446,94 @@ export async function recalculateProgress(parentId: string): Promise<void> {
   }
 }
 
-/** Fetch workspace members (Profiles + manually added contacts + workspace owner) */
+/** Fetch workspace members (Profiles + Users + manually added contacts + workspace owner) */
 export async function fetchWorkspaceMembers(workspaceId: string): Promise<Profile[]> {
-  // 0. Workspace owner'ını bul ve profilini çek
+  // 1. Workspace owner'ını al
   const { data: wsData } = await supabase
     .from('workspaces')
     .select('owner_id')
     .eq('id', workspaceId)
-    .single()
+    .maybeSingle()
 
-  let ownerProfile: Profile | null = null
-  if (wsData?.owner_id) {
-    // Önce full_name ile dene, başarısız olursa sadece email ile çek
-    let { data: ownerData, error: ownerErr } = await supabase
-      .from('profiles')
-      .select('id, email, full_name')
-      .eq('id', wsData.owner_id)
-      .maybeSingle()
-    if (ownerErr) {
-      const retry = await supabase
-        .from('profiles')
-        .select('id, email')
-        .eq('id', wsData.owner_id)
-        .maybeSingle()
-      ownerData = retry.data ? { ...retry.data, full_name: null } : null
-    }
-    if (ownerData) {
-      ownerProfile = ownerData as Profile
-    }
-  }
-
-  // 1. Fetch real profiles (via workspace_members)
-  let profileList: Profile[] = []
-  const { data: members, error: memberErr } = await supabase
+  // 2. workspace_members tablosundaki user_id'leri al (join kullanmadan, doğrudan sütun sorgusu)
+  const { data: memberRows, error: memberErr } = await supabase
     .from('workspace_members')
-    .select(`
-      profiles (
-        id,
-        email,
-        full_name
-      )
-    `)
+    .select('user_id')
     .eq('workspace_id', workspaceId)
 
-  if (memberErr) {
-    // full_name sütunu yoksa veya join hata veriyorsa, full_name olmadan tekrar dene
-    console.warn("Member fetch error, retrying without full_name:", memberErr.message)
-    const { data: retryMembers } = await supabase
-      .from('workspace_members')
-      .select(`
-        profiles (
-          id,
-          email
-        )
-      `)
-      .eq('workspace_id', workspaceId)
-    profileList = (retryMembers as any[])?.map(m => {
-      if (!m.profiles) return null
-      return { ...m.profiles, full_name: null }
-    }).filter(Boolean) || []
-  } else {
-    profileList = (members as any[])?.map(m => m.profiles).filter(Boolean) || []
+  if (memberErr) console.warn("workspace_members fetch warning:", memberErr.message)
+
+  // 3. Benzersiz kullanıcı kimliklerini topla (owner + üyeler)
+  const userIds = new Set<string>()
+  if (wsData?.owner_id) userIds.add(wsData.owner_id)
+  if (memberRows) {
+    memberRows.forEach((m: any) => {
+      if (m.user_id) userIds.add(m.user_id)
+    })
   }
 
-  // 2. Fetch manually added contacts (from workspace_contacts table)
+  // 4. Profiles ve Users tablolarından profilleri çek
+  const profileMap = new Map<string, Profile>()
+
+  if (userIds.size > 0) {
+    const idList = Array.from(userIds)
+
+    // Profiles tablosundan sorgula
+    try {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, email, full_name')
+        .in('id', idList)
+
+      if (profiles) {
+        profiles.forEach((p: any) => {
+          profileMap.set(p.id, { id: p.id, email: p.email, full_name: p.full_name ?? null })
+        })
+      }
+    } catch (e) {
+      console.warn("Profiles fetch error:", e)
+    }
+
+    // Users tablosundan da sorgula (users.id veya users.auth_id ile eşleşenler)
+    try {
+      const { data: users } = await supabase
+        .from('users')
+        .select('id, email, name, auth_id')
+        .or(`id.in.(${idList.join(',')}),auth_id.in.(${idList.join(',')})`)
+
+      if (users) {
+        users.forEach((u: any) => {
+          const profileItem: Profile = {
+            id: u.auth_id || u.id,
+            email: u.email,
+            full_name: u.name ?? null
+          }
+          if (u.id) profileMap.set(u.id, profileItem)
+          if (u.auth_id) profileMap.set(u.auth_id, profileItem)
+        })
+      }
+    } catch (e) {
+      console.warn("Users fetch warning:", e)
+    }
+  }
+
+  // 5. Manuel eklenen kişileri al
   const { data: contacts, error: contactErr } = await supabase
     .from('workspace_contacts')
     .select('id, full_name, email')
     .eq('workspace_id', workspaceId)
 
   if (contactErr) {
-    // If the table doesn't exist yet, fail silently and return empty
-    console.warn("Contacts fetch error (table might not exist yet):", contactErr.message)
+    console.warn("Contacts fetch error:", contactErr.message)
   }
 
-  const contactList = (contacts || []).map(c => ({
+  const contactList = (contacts || []).map((c: any) => ({
     id: c.id,
     email: c.email || `${c.full_name.toLowerCase().replace(/\s+/g, '.')}@manual.local`,
     full_name: c.full_name
   }))
 
-  // Owner'ı listeye ekle (zaten listede değilse)
-  const allProfiles = [...profileList, ...contactList]
-  if (ownerProfile && !allProfiles.some(p => p.id === ownerProfile!.id)) {
-    allProfiles.unshift(ownerProfile)
-  }
-
-  return allProfiles
+  return [...Array.from(profileMap.values()), ...contactList]
 }
 
 /** Add a manual assignee contact
@@ -631,17 +720,37 @@ export async function markSubtasksDone(parentId: string): Promise<void> {
   if (error) throw error
 }
 
-/** Profil ID'si ile kullanıcının email adresini doğrudan çeker */
-export async function fetchProfileEmail(profileId: string): Promise<string | null> {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('email')
-    .eq('id', profileId)
-    .maybeSingle()
+/** Profil veya User ID'si ile kullanıcının email adresini doğrudan çeker */
+export async function fetchProfileEmail(userId: string): Promise<string | null> {
+  // 1. Önce profiles tablosundan dene
+  try {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('id', userId)
+      .maybeSingle()
 
-  if (error) {
-    console.warn('fetchProfileEmail error:', error.message)
-    return null
+    if (profile?.email) {
+      return profile.email
+    }
+  } catch (e) {
+    console.warn('fetchProfileEmail profiles error:', e)
   }
-  return data?.email ?? null
+
+  // 2. Bulunamazsa users tablosundan (id veya auth_id) dene
+  try {
+    const { data: userRow } = await supabase
+      .from('users')
+      .select('email')
+      .or(`id.eq.${userId},auth_id.eq.${userId}`)
+      .maybeSingle()
+
+    if (userRow?.email) {
+      return userRow.email
+    }
+  } catch (e) {
+    console.warn('fetchProfileEmail users error:', e)
+  }
+
+  return null
 }
